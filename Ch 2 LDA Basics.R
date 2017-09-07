@@ -1,14 +1,34 @@
 ## Assignment #1
 ## Chapter 2: LDA Basics
-
-oysup_y_p <- read.csv("~/Dropbox/oysup_y_p.csv")
+library(dplyr)
+library(tidyr)
+purpose <- read.csv("~/Dropbox/oysup_y_p.csv")
 
 ## 1. Move your data into a long format and a wide format.
 ##    Did you have any specific challenges that you encountered? If so, discuss them.
 
+purpose_long <- purpose %>%
+  gather(-c(FAMID, SEX2, MEDUC2, MPEDUC2), key = "grade", value = "value")
+purpose_long
+
+purpose_wide <- purpose_long %>%
+  spread(key = "grade", value = "value")
+purpose_wide
+
+### Challenges: First I forgot to exclude the ID variable, so it tried to make it into a value.
+### I had a lot of variables that had repeated measures, so I had to think about how to split them
+### after I gathered everything.
+### Also, my variables were not consistently named because I was mixing naming conventions (my preferred
+### conventions, and then the ones that OPP used). This made the next step tricky. I went in and cleaned
+### up my file a lot more so that I could use the separate function easily.
 
 ## 2. Create a wave variable and date variable (if applicable).
 
+purpose_long <- purpose %>% 
+  gather(-ID, key = "grade", value = "value") %>% 
+  separate(grade, into = c("variable", "wave")) %>% 
+  spread(variable,value) 
+long.date
 
 
 ## 3. What is your sample size for each wave of assessment?
