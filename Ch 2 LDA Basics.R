@@ -2,7 +2,7 @@
 ## Chapter 2: LDA Basics
 library(dplyr)
 library(tidyr)
-purpose <- read.csv("~/Dropbox/oysup_y_p.csv")
+purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_self.csv")
 
 ## 1. Move your data into a long format and a wide format.
 ##    Did you have any specific challenges that you encountered? If so, discuss them.
@@ -15,23 +15,23 @@ purpose_wide <- purpose_long %>%
   spread(key = "grade", value = "value")
 purpose_wide
 
-### Challenges: First I forgot to exclude the ID variable, so it tried to make it into a value.
-### I had a lot of variables that had repeated measures, so I had to think about how to split them
-### after I gathered everything.
-### Also, my variables were not consistently named because I was mixing naming conventions (my preferred
-### conventions, and then the ones that OPP used). This made the next step tricky. I went in and cleaned
-### up my file a lot more so that I could use the separate function easily.
+### Challenges: First I forgot to exclude the ID variable and stable demographics, so it tried to make
+### it into a value. I had a lot of variables that had repeated measures, so I had to think about
+### how to split them after I gathered everything. Also, my variables were not consistently named
+### because I was mixing naming conventions (my preferred conventions, and then the ones that OPP used).
+### I went in and cleaned up my file a lot more so that I could use the separate function easily in the next step.
 
 ## 2. Create a wave variable and date variable (if applicable).
 
-purpose_long <- purpose %>% 
-  gather(-ID, key = "grade", value = "value") %>% 
-  separate(grade, into = c("variable", "wave")) %>% 
-  spread(variable,value) 
-long.date
-
+### Created grade variable
+purpose_long_2 <- purpose_long %>% 
+  separate(grade, into = c("variable", "grade"), sep = "_", convert = T) %>%
+  spread(variable, value) 
+purpose_long_2
 
 ## 3. What is your sample size for each wave of assessment?
+
+### 
 
 ## 4. Take the date variable and convert it to a different date format such
 ##    as time in study or age (if appropriate). ## What scale is most suitable for
