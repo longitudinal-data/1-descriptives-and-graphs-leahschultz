@@ -8,12 +8,18 @@ purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_self.csv")
 ##    Did you have any specific challenges that you encountered? If so, discuss them.
 
 purpose_long <- purpose %>%
-  gather(-c(FAMID, SEX2, MEDUC2, MPEDUC2), key = "grade", value = "value")
+  gather(-c(FAMID, SEX2, MEDUC2, MPEDUC2), key = "grade", value = "value") %>%
+  separate(grade, into = c("variable", "grade"), sep = "_", convert = T) %>%
+  spread(variable, value)
 purpose_long
 
 purpose_wide <- purpose_long %>%
-  spread(key = "grade", value = "value")
+  gather(-c(FAMID, SEX2, MEDUC2, MPEDUC2, grade), key = "variable", value = "value") %>%
+  unite(VarG, variable, grade)  %>%
+  spread(key = VarG, value = value)
 purpose_wide
+
+ddply(letters, .(Session,Speaker), summarize, N = length(Speaker))
 
 ### Challenges: First I forgot to exclude the ID variable and stable demographics, so it tried to make
 ### it into a value. I had a lot of variables that had repeated measures, so I had to think about
@@ -31,7 +37,13 @@ purpose_long_2
 
 ## 3. What is your sample size for each wave of assessment?
 
-### 
+purpose_long_2 %>% 
+  group_by(grade) %>%
+  count()
+
+### since sex and other things are available for each wave, need to make
+### those time-dependent...(maybe just grade 2?)
+### current it thinks there are 1024
 
 ## 4. Take the date variable and convert it to a different date format such
 ##    as time in study or age (if appropriate). ## What scale is most suitable for
