@@ -79,11 +79,18 @@ raneff_plot <- ggplot(random_params, aes(x = estimate, color = term)) +
 re.sim <- REsim(model4)
 plotREsim(re.sim)
 
-## 8. Create a plot of the trajectory, along with a spaghetti plot of each person’s individual slope.
-## Set the alpha level (transparency) on the individual slopes to make them easier to see.
+## 8. Create a plot of the trajectory, along with a spaghetti plot of each
+## person’s individual slope. Set the alpha level (transparency) on the
+## individual slopes to make them easier to see.
 
+predict <- predictInterval(merMod = model4, newdata = purpose_long_elem,
+                           level = 0.9, n.sims = 100, 
+                           stat = "median", include.resid.var = TRUE)
+growth_df <- cbind(purpose_long_elem, predict$fit)
 
+growth_plot <- ggplot(purpose_long_elem, aes(x = grade, y = predict$fit)) +
+  geom_line(aes(group = FAMID), alpha = .2) +
+  stat_smooth(method = lm)
+growth_plot
 
-## 9. Create a plot of the trajectory, along with a spaghetti plot of each person’s individual slope.
-## Set the alpha level (transperancy) on the individual slopes to make them easier to see.
 
