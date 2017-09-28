@@ -3,6 +3,7 @@
 
 library(lme4)
 library(sjPlot)
+library(ggplot2)
 library(broom)
 
 ## 1. Run linear models on all of your subjects (a basic regression).
@@ -29,10 +30,21 @@ summary(model2)
 ## What does residual variance look like compared to linear model?
 ## Create a graph to show this effect.
 
+model1.aug <- augment(model1)
 model2.aug <- augment(model2)
+mod1_resid <- abs(model1.aug$.resid)
+mod2_resid <- abs(model2.aug$.resid)
+mean_mod1 <- mean(mod1_resid)
+mean_mod2 <- mean(mod2_resid)
+resid_df <- data.frame("Type" = c("Linear", "Mixed"), 
+                       "Mean" = c(mean_mod1, mean_mod2))
 
-sjp.lmer(model2, facet.grid = FALSE, 
-         sort = "sort.all")
+resid_plot <- ggplot(resid_df, aes(x = Type, y = Mean)) +
+  geom_col()
+
+## Absolute value of the average residual variance is lower in the mixed model, since we're
+## accounting for individual-level, random effects.
+
 
 ## 3. Introduce a fixed slope term. What is the difference in terms of the fixed
 ## effects estimates between this estimate and the previous? Of the residual standard
