@@ -16,10 +16,9 @@ purpose_long
 purpose_wide <- purpose_long %>%
   gather(-c(FAMID, SEX2, MEDUC2, MPEDUC2, grade), key = "variable", value = "value") %>%
   unite(VarG, variable, grade)  %>%
-  spread(key = VarG, value = value)
+  spread(key = VarG, value = value) %>%
+  select_if(~sum(!is.na(.)) > 0)
 purpose_wide
-
-ddply(letters, .(Session,Speaker), summarize, N = length(Speaker))
 
 ### Challenges: First I forgot to exclude the ID variable and stable demographics, so it tried to make
 ### it into a value. I had a lot of variables that had repeated measures, so I had to think about
@@ -27,18 +26,19 @@ ddply(letters, .(Session,Speaker), summarize, N = length(Speaker))
 ### because I was mixing naming conventions (my preferred conventions, and then the ones that OPP used).
 ### I went in and cleaned up my file a lot more so that I could use the separate function easily in the next step.
 
+### One thing that was difficult was that I ended up with some NA columns -- drop and fill didn't
+### seem to help, so I had to find a solution for how to drop the NA columns from the key-pair
+### combinations that didn't exist (for example, purpose wasn't assessed at grade 1).
+
 ## 2. Create a wave variable and date variable (if applicable).
 
-### Created grade variable
-purpose_long_2 <- purpose_long %>% 
-  separate(grade, into = c("variable", "grade"), sep = "_", convert = T) %>%
-  spread(variable, value) 
-purpose_long_2
+### Already created grade variable, which is equivalent to wave, for my purposes.
 
 ## 3. What is your sample size for each wave of assessment?
 
-purpose_long_2 %>% 
+purpose_long %>% 
   group_by(grade) %>%
+  drop_na()
   count()
 
 ### since sex and other things are available for each wave, need to make
