@@ -2,13 +2,14 @@
 ## Chapter 4: Conditional Predictors
 library(lmer)
 
-#Run a series of models using a time-invariant nominal covariate. a) where the covariate only predicts the intercept b) predicts both intercept and slope c) is rescaled eg centering. For all models, how does your model change from model to model. What is your final model?
+#1) Run a series of models using a time-invariant nominal covariate. a) where the covariate only predicts the intercept b) predicts both intercept and slope c) is rescaled eg centering. For all models, how does your model change from model to model. What is your final model?
 
-#Introduce a time-invariant continuous covariate and run models a-c from #1.
+#2) Introduce a time-invariant continuous covariate and run models a-c from #1.
 
-#Graph both of your final models for the continuous and nominal models above.
-#Calculate confidence intervals around your estimates for your final models
+#3) Graph both of your final models for the continuous and nominal models above.
 
-#Include both types of covariates in a single model. How does your interpretation of parameters change?
+#4) Calculate confidence intervals around your estimates for your final models
 
-#If you have one available, introduce a time-varying covariate.
+#5) Include both types of covariates in a single model. How does your interpretation of parameters change?
+
+#6) If you have one available, introduce a time-varying covariate.

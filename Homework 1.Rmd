@@ -9,9 +9,8 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
+# Chapter 2: LDA Basics
 ```{r loading, message=FALSE, warning=FALSE}
-## Chapter 2: LDA Basics
 library(dplyr)
 library(tidyr)
 library(ggplot2)
