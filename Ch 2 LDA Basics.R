@@ -2,6 +2,7 @@
 ## Chapter 2: LDA Basics
 library(dplyr)
 library(tidyr)
+library(ggplot2)
 purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_self.csv")
 
 ## 1. Move your data into a long format and a wide format.
@@ -38,23 +39,64 @@ purpose_wide
 
 purpose_long %>% 
   group_by(grade) %>%
-  drop_na()
+  filter(!is.na(cbmom)) %>%
   count()
 
-### since sex and other things are available for each wave, need to make
-### those time-dependent...(maybe just grade 2?)
-### current it thinks there are 1024
+### Grade 1: 220
+### Grade 2: 408
+### Grade 3: 606
+### Grade 4: 806
+### Grade 5: 994
 
 ## 4. Take the date variable and convert it to a different date format such
-##    as time in study or age (if appropriate). ## What scale is most suitable for
+##    as time in study or age (if appropriate). What scale is most suitable for
 ##    your analyses? (weeks/months/years?)
+
+### Not applicable for my analyses.
 
 ## 5. Graph your data using the different time metrics, fitting individual curves
 ##    for each person.
 
+## Needed to drop variables at age 21:
+purpose_long_elem <- purpose_long %>% 
+  filter(grade != 21)
+
+## Plotting individual curves for conflict with mother over time:
+gg2 <- ggplot(purpose_long_elem, aes(x = grade, y = cbmom, group = FAMID)) +
+  geom_line() + geom_point()
+gg2
+
+gg3 <- gg2 + aes(colour = factor(FAMID)) + guides(colour=FALSE) 
+gg3
+
+### Since these are sums, not AS interesting at the moment.
+
+## Subset of 10 curves
+set.seed(11)
+ex.random <- purpose_long_elem %>% 
+  select(FAMID) %>% 
+  distinct %>% 
+  sample_n(10) 
+
+example <-
+  left_join(ex.random, purpose_long_elem) 
+
+gg4 <- ggplot(example, aes(x = grade, y = cbmom, group = FAMID)) + 
+  geom_point() + stat_smooth(method="lm") + facet_wrap(~FAMID)
+gg4
+
 ## 6. Create an overall average trend of your data (split up into groups if appropriate).
 ##    Attempt to color your individual data points and/or shade different lines
-##    (highlight some particiapnts, highlight the average trend line but not the individual
+##    (highlight some participants, highlight the average trend line but not the individual
 ##    level lines).
 
-## 7. Look at the correlations of your DV across time
+gg5 <- ggplot(purpose_long_elem, aes(x = jitter(grade), y = cbmom)) +
+  geom_point() + stat_smooth() 
+gg5
+
+## 7. Look at the correlations of your DV across time.
+
+conflict_mom <- purpose_wide %>%
+  select(cbmom_1:cbmom_5)
+cor(conflict_mom, use = "complete.obs")
+
