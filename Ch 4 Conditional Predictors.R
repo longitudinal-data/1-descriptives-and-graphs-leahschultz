@@ -1,3 +1,7 @@
+## Assignment #3
+## Chapter 4: Conditional Predictors
+library(lmer)
+
 #Run a series of models using a time-invariant nominal covariate. a) where the covariate only predicts the intercept b) predicts both intercept and slope c) is rescaled eg centering. For all models, how does your model change from model to model. What is your final model?
 
 #Introduce a time-invariant continuous covariate and run models a-c from #1.
