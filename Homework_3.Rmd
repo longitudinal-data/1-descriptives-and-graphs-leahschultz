@@ -12,15 +12,18 @@ knitr::opts_chunk$set(echo = TRUE)
 # Chapter 4: Conditional Predictors
 ```{r warning = FALSE, message = FALSE}
 library(dplyr)
-library(tidyr)
 library(lme4)
 library(ggplot2)
-library(broom)
 library(merTools)
 purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_self.csv")
+y_t_all <- read.csv("~/Box Sync/OYSUP Data/OYSUP Data (csv) and Codebooks/youth_best_teacher_Oct-9.csv")
+gender <- y_t_all %>%
+  select(SEX3)
+purpose <- cbind(purpose, gender)
 ```
 
 ## 1. Run a series of models using a time-invariant nominal covariate. a) where the covariate only predicts the intercept b) predicts both intercept and slope c) is rescaled eg centering. For all models, how does your model change from model to model. What is your final model?
+
 
 ## 2. Introduce a time-invariant continuous covariate and run models a-c from #1.
 
