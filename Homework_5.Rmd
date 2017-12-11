@@ -9,12 +9,27 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Fit a measurement model to your constructs at one time point. Try out the different types of scaling discussed in class. What changes what stays the same?
+```{r warning = FALSE, message = FALSE}
+library(lme4)
+library(ggplot2)
+purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_self.csv")
+y_t_all <- read.csv("~/Box Sync/OYSUP Data/OYSUP Data (csv) and Codebooks/youth_best_teacher_Oct-9.csv")
+require(MASS)
+require(dplyr)
+gender <- y_t_all %>%
+   dplyr::select(SEX3)
+newdata <- merge(purpose, gender)
+```
+
+## Fit a measurement model to your constructs at one time point. Try out the different types of scaling discussed in class. What changes what stays the same?
+
+
+
 
 What do the fit statistics say about your latent variable? Good/bad? Is your latent variable Just identified/saturdated, under identified or over identified?
 Fit a longitudinal CFA model where you a) first correlate your latent factors across time and then b) a second model that predicts later times by a prevous time (ie auto regressive; t1 -> t2 -> t3). What are your conclusions? How does one differ from the other?
 
-Fit a longitdinal growth model in SEM and in HLM. Compare and contrast the differences.
+Fit a longitudinal growth model in SEM and in HLM. Compare and contrast the differences.
 
 Constrain the residual variances to be equal. Does this change the fit of your model?
 
