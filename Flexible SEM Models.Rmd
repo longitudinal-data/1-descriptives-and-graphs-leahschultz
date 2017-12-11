@@ -1,0 +1,3039 @@
+---
+title: "Flexible SEM Models"
+author: "Leah Schultz"
+date: "11/30/2017"
+output:
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 4
+    code_folding: "hide"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message=F,warning=F)
+```
+# Latent Growth Curve Models
+## Student-report
+### Extraversion
+```{r}
+library(lavaan)
+library(semPlot)
+
+y_t_all <- read.csv("~/Desktop/my_models.csv")
+#EXTRAVERSION
+
+model <- '
+  # intercept and slope with fixed coefficients
+    E_i =~ 1*extra_7s + 1*extra_8s + 1*extra_9s + 1*extra_10s
+    E_s =~ 0*extra_7s + 1*extra_8s + 2*extra_9s + 3*extra_10s'
+fitE <- growth(model,  missing="ML", data = y_t_all)
+fitEest<-parameterEstimates(fitE)
+fitEest<-fitEest[c(13:15, 20:21),]
+fitEcfi<-fitMeasures(fitE,"cfi")
+
+#Model fit
+fitEcfi
+summary(fitE)
+semPaths(fitE)
+```
+
+### Agreeableness
+```{r}
+#AGREEABLENESS
+
+model <- '
+# intercept and slope with fixed coefficients
+A_i =~ 1*agree_7s + 1*agree_8s + 1*agree_9s + 1*agree_10s
+A_s =~ 0*agree_7s + 1*agree_8s + 2*agree_9s + 3*agree_10s'
+fitA <- growth(model,  missing="ML", data = y_t_all)
+fitAest<-parameterEstimates(fitA)
+fitAest<-fitAest[c(13:15, 20:21),]
+fitAcfi<-fitMeasures(fitA,"cfi")
+
+#Model fit
+fitAcfi
+summary(fitA)
+semPaths(fitA)
+```
+
+### Conscientiousness
+```{r}
+
+#CONSCIENTIOUSNESS
+
+model <- '
+  # intercept and slope with fixed coefficients
+    C_i =~ 1*consc_7s + 1*consc_8s + 1*consc_9s + 1*consc_10s
+    C_s =~ 0*consc_7s + 1*consc_8s + 2*consc_9s + 3*consc_10s'
+fitC <- growth(model,  missing="ML", data = y_t_all)
+fitCest<-parameterEstimates(fitC)
+fitCest<-fitCest[c(13:15, 20:21),]
+fitCcfi<-fitMeasures(fitC,"cfi")
+
+#Model fit
+fitCcfi
+summary(fitC)
+semPaths(fitC)
+```
+
+### Neuroticism
+```{r}
+#NEUROTICISM
+
+model <- '
+# intercept and slope with fixed coefficients
+N_i =~ 1*neuro_7s + 1*neuro_8s + 1*neuro_9s + 1*neuro_10s
+N_s =~ 0*neuro_7s + 1*neuro_8s + 2*neuro_9s + 3*neuro_10s'
+fitN <- growth(model,  missing="ML", data = y_t_all)
+fitNest<-parameterEstimates(fitN)
+fitNest<-fitNest[c(13:15, 20:21),]
+fitNcfi<-fitMeasures(fitN,"cfi")
+
+#Model fit
+fitNcfi
+summary(fitN)
+semPaths(fitN)
+```
+
+### Openness
+```{r}
+#OPENNESS
+model <- '
+# intercept and slope with fixed coefficients
+O_i =~ 1*open_7s + 1*open_8s + 1*open_9s + 1*open_10s
+O_s =~ 0*open_7s + 1*open_8s + 2*open_9s + 3*open_10s'
+fitO <- growth(model,  missing="ML", data = y_t_all)
+fitOest<-parameterEstimates(fitO)
+fitOest<-fitOest[c(13:15, 20:21),]
+fitOcfi<-fitMeasures(fitO,"cfi")
+
+#Model fit
+fitOcfi
+summary(fitO)
+semPaths(fitO)
+```
+
+## Summary: Student-Report
+
+```{r}
+summary_E_s<-rbind(fitEest,fitAest,fitCest,fitNest,fitOest)
+summary_E_s
+```
+
+Overall, students increased in conscientiousness and decreased in neuroticism between 7th and 10th grade. There were individual differences in the degree to which they changed for all personality traits, with the exception of conscientiousness.
+
+## Teacher-Report
+### Extraversion
+```{r}
+#EXTRAVERSION
+model <- '
+## define latent variables
+extra7 =~ NA*TPER7_01 + cat1*TPER7_01 + cat2*TPER7_04 + cat3*TPER7_15 + cat4*TPER7_19R + cat5*TPER7_22R
+extra8 =~ NA*TPER8_01+ cat1*TPER8_01+ cat2*TPER8_04 + cat3*TPER8_15+ cat4*TPER8_19R + cat5*TPER8_22R
+extra9 =~ NA*TPER9_01+ cat1*TPER9_01+ cat2*TPER9_04 + cat3*TPER9_15+ cat4*TPER9_19R + cat5*TPER9_22R
+extra10 =~ NA*TPER10_01 + cat1*TPER10_01 + cat2*TPER10_04 + cat3*TPER10_15 + cat4*TPER10_19R + cat5*TPER10_22R
+
+#intercepts
+TPER7_01 ~ (nu1)*1
+TPER7_04 ~ (nu2)*1
+TPER7_15 ~ (nu3)*1
+TPER7_19R ~ (nu4)*1
+TPER7_22R ~ (nu5)*1
+TPER8_01~ (nu1)*1
+TPER8_04 ~ (nu2)*1
+TPER8_15~ (nu3)*1
+TPER8_19R ~ (nu4)*1
+TPER8_22R~ (nu5)*1
+TPER9_01~ (nu1)*1
+TPER9_04 ~ (nu2)*1
+TPER9_15~ (nu3)*1
+TPER9_19R ~ (nu4)*1
+TPER9_22R~ (nu5)*1
+TPER10_01 ~ (nu1)*1
+TPER10_04 ~ (nu2)*1
+TPER10_15 ~ (nu3)*1
+TPER10_19R ~ (nu4)*1
+TPER10_22R ~ (nu5)*1
+
+TPER7_01 ~~ TPER8_01 + TPER9_01 + TPER10_01
+TPER8_01 ~~ TPER9_01 + TPER10_01
+TPER9_01 ~~ TPER10_01
+
+TPER7_04 ~~ TPER8_04 + TPER9_04 + TPER10_04
+TPER8_04 ~~ TPER9_04 + TPER10_04
+TPER9_04 ~~ TPER10_04
+
+TPER7_15 ~~ TPER8_15 + TPER9_15 + TPER10_15
+TPER8_15 ~~ TPER9_15 + TPER10_15
+TPER9_15 ~~ TPER10_15
+
+TPER7_19R ~~ TPER8_19R + TPER9_19R + TPER10_19R
+TPER8_19R ~~ TPER9_19R + TPER10_19R
+TPER9_19R ~~ TPER10_19R
+
+TPER7_22R ~~ TPER8_22R + TPER9_22R + TPER10_22R
+TPER8_22R ~~ TPER9_22R + TPER10_22R
+TPER9_22R ~~ TPER10_22R
+
+# intercept and slope with fixed coefficients
+Eint =~ 1*extra7 + 1*extra8 + 1*extra9 + 1*extra10
+Ediff =~ 0*extra7 + 1*extra8 + 2*extra9 + 3*extra10
+
+Eint ~~ Eint
+Ediff ~~ Ediff
+CIG21_04 ~ Ediff
+CIG21_04 ~ Eint
+Eint ~ 1
+Ediff ~ 1
+extra7 ~ 0*1
+extra8 ~ 0*1
+extra9 ~ 0*1
+extra10 ~ 0*1
+
+extra7~~u*extra7
+extra8~~u*extra8
+extra9~~u*extra9
+extra10~~u*extra10
+
+#model constraints
+cat1 == 4 - cat2 - cat3 - cat4
+(nu1) == 0 - (nu2) - (nu3) - (nu4)'
+fitE_t <- growth(model, missing="ML", data = y_t_all)
+fitE_t_est<-parameterEstimates(fitE_t)
+fitE_t_est<-fitE_t_est[c(79:82,111),]
+fitE_t_cfi<-fitMeasures(fitE_t, "cfi")
+
+#Model fit
+fitE_t_cfi
+summary(fitE_t)
+```
+
+### Agreeableness
+```{r}
+#AGREEABLENESS
+
+model <- '
+## define latent variables
+agree7 =~ NA*TPER7_05 + cat1*TPER7_05 + cat2*TPER7_07 + cat3*TPER7_11 + cat4*TPER7_20R + cat5*TPER7_23R
+agree8 =~ NA*TPER8_05+ cat1*TPER8_05+ cat2*TPER8_07 + cat3*TPER8_11+ cat4*TPER8_20R + cat5*TPER8_23R
+agree9 =~ NA*TPER9_05+ cat1*TPER9_05+ cat2*TPER9_07 + cat3*TPER9_11+ cat4*TPER9_20R + cat5*TPER9_23R
+agree10 =~ NA*TPER10_05 + cat1*TPER10_05 + cat2*TPER10_07 + cat3*TPER10_11 + cat4*TPER10_20R + cat5*TPER10_23R
+
+#intercepts
+TPER7_05 ~ (nu1)*1
+TPER7_07 ~ (nu2)*1
+TPER7_11 ~ (nu3)*1
+TPER7_20R ~ (nu4)*1
+TPER7_23R ~ (nu5)*1
+TPER8_05~ (nu1)*1
+TPER8_07 ~ (nu2)*1
+TPER8_11~ (nu3)*1
+TPER8_20R ~ (nu4)*1
+TPER8_23R~ (nu5)*1
+TPER9_05~ (nu1)*1
+TPER9_07 ~ (nu2)*1
+TPER9_11~ (nu3)*1
+TPER9_20R ~ (nu4)*1
+TPER9_23R~ (nu5)*1
+TPER10_05 ~ (nu1)*1
+TPER10_07 ~ (nu2)*1
+TPER10_11 ~ (nu3)*1
+TPER10_20R ~ (nu4)*1
+TPER10_23R ~ (nu5)*1
+
+TPER7_05 ~~ TPER8_05 + TPER9_05 + TPER10_05
+TPER8_05 ~~ TPER9_05 + TPER10_05
+TPER9_05 ~~ TPER10_05
+
+TPER7_07 ~~ TPER8_07 + TPER9_07 + TPER10_07
+TPER8_07 ~~ TPER9_07 + TPER10_07
+TPER9_07 ~~ TPER10_07
+
+TPER7_11 ~~ TPER8_11 + TPER9_11 + TPER10_11
+TPER8_11 ~~ TPER9_11 + TPER10_11
+TPER9_11 ~~ TPER10_11
+
+TPER7_20R ~~ TPER8_20R + TPER9_20R + TPER10_20R
+TPER8_20R ~~ TPER9_20R + TPER10_20R
+TPER9_20R ~~ TPER10_20R
+
+TPER7_23R ~~ TPER8_23R + TPER9_23R + TPER10_23R
+TPER8_23R ~~ TPER9_23R + TPER10_23R
+TPER9_23R ~~ TPER10_23R
+
+# intercept and slope with fixed coefficients
+Aint =~ 1*agree7 + 1*agree8 + 1*agree9 + 1*agree10
+Adiff =~ 0*agree7 + 1*agree8 + 2*agree9 + 3*agree10
+
+Aint ~~ Aint
+Adiff ~~ Adiff
+Aint ~ 1
+Adiff ~ 1
+Adiff ~ CIG21_04
+Aint ~ CIG21_04
+agree7 ~ 0*1
+agree8 ~ 0*1
+agree9 ~ 0*1
+agree10 ~ 0*1
+
+agree7~~u*agree7
+agree8~~u*agree8
+agree9~~u*agree9
+agree10~~u*agree10
+
+#model constraints
+cat1 == 4 - cat2 - cat3 - cat4
+(nu1) == 0 - (nu2) - (nu3) - (nu4)'
+fitA_t <- growth(model, missing="ML", data = y_t_all)
+fitA_t_est<-parameterEstimates(fitA_t)
+fitA_t_est<-fitA_t_est[c(79:82,111),]
+fitA_t_cfi<-fitMeasures(fitA_t, "cfi")
+
+#Model fit
+fitA_t_cfi
+summary(fitA_t)
+```
+
+### Conscientiousness
+```{r}
+#CONSCIENTIOUSNESS
+
+model <- '
+## define latent variables
+consc7 =~ NA*TPER7_02 + cat1*TPER7_02 + cat2*TPER7_06 + cat3*TPER7_16 + cat4*TPER7_21R + cat5*TPER7_24R
+consc8 =~ NA*TPER8_02+ cat1*TPER8_02+ cat2*TPER8_06 + cat3*TPER8_16+ cat4*TPER8_21R + cat5*TPER8_24R
+consc9 =~ NA*TPER9_02+ cat1*TPER9_02+ cat2*TPER9_06 + cat3*TPER9_16+ cat4*TPER9_21R + cat5*TPER9_24R
+consc10 =~ NA*TPER10_02 + cat1*TPER10_02 + cat2*TPER10_06 + cat3*TPER10_16 + cat4*TPER10_21R + cat5*TPER10_24R
+
+#intercepts
+TPER7_02 ~ (nu1)*1
+TPER7_06 ~ (nu2)*1
+TPER7_16 ~ (nu3)*1
+TPER7_21R ~ (nu4)*1
+TPER7_24R ~ (nu5)*1
+TPER8_02~ (nu1)*1
+TPER8_06 ~ (nu2)*1
+TPER8_16~ (nu3)*1
+TPER8_21R ~ (nu4)*1
+TPER8_24R~ (nu5)*1
+TPER9_02~ (nu1)*1
+TPER9_06 ~ (nu2)*1
+TPER9_16~ (nu3)*1
+TPER9_21R ~ (nu4)*1
+TPER9_24R~ (nu5)*1
+TPER10_02 ~ (nu1)*1
+TPER10_06 ~ (nu2)*1
+TPER10_16 ~ (nu3)*1
+TPER10_21R ~ (nu4)*1
+TPER10_24R ~ (nu5)*1
+
+TPER7_02 ~~ TPER8_02 + TPER9_02 + TPER10_02
+TPER8_02 ~~ TPER9_02 + TPER10_02
+TPER9_02 ~~ TPER10_02
+
+TPER7_06 ~~ TPER8_06 + TPER9_06 + TPER10_06
+TPER8_06 ~~ TPER9_06 + TPER10_06
+TPER9_06 ~~ TPER10_06
+
+TPER7_16 ~~ TPER8_16 + TPER9_16 + TPER10_16
+TPER8_16 ~~ TPER9_16 + TPER10_16
+TPER9_16 ~~ TPER10_16
+
+TPER7_21R ~~ TPER8_21R + TPER9_21R + TPER10_21R
+TPER8_21R ~~ TPER9_21R + TPER10_21R
+TPER9_21R ~~ TPER10_21R
+
+TPER7_24R ~~ TPER8_24R + TPER9_24R + TPER10_24R
+TPER8_24R ~~ TPER9_24R + TPER10_24R
+TPER9_24R ~~ TPER10_24R
+
+# intercept and slope with fixed coefficients
+Cint =~ 1*consc7 + 1*consc8 + 1*consc9 + 1*consc10
+Cdiff =~ 0*consc7 + 1*consc8 + 2*consc9 + 3*consc10
+
+Cint ~~ Cint
+Cdiff ~~ Cdiff
+Cdiff ~ CIG21_04
+Cint ~ CIG21_04
+Cint ~ 1
+Cdiff ~ 1
+consc7 ~ 0*1
+consc8 ~ 0*1
+consc9 ~ 0*1
+consc10 ~ 0*1
+
+consc7~~u*consc7
+consc8~~u*consc8
+consc9~~u*consc9
+consc10~~u*consc10
+
+#model constraints
+cat1 == 4 - cat2 - cat3 - cat4
+(nu1) == 0 - (nu2) - (nu3) - (nu4)'
+fitC_t <- growth(model, missing="ML", data = y_t_all)
+fitC_t_est<-parameterEstimates(fitC_t)
+fitC_t_est<-fitC_t_est[c(79:82,111),]
+fitC_t_cfi<-fitMeasures(fitC_t, "cfi")
+
+#Model fit
+fitC_t_cfi
+summary(fitC_t)
+```
+
+### Neuroticism
+```{r}
+#NEUROTICISM
+
+model <- '
+## define latent variables
+neuro7 =~ NA*TPER7_08 + cat1*TPER7_08 + cat2*TPER7_10 + cat3*TPER7_17R + cat4*TPER7_12R + cat5*TPER7_13R
+neuro8 =~ NA*TPER8_08+ cat1*TPER8_08+ cat2*TPER8_10 + cat3*TPER8_17R+ cat4*TPER8_12R + cat5*TPER8_13R
+neuro9 =~ NA*TPER9_08+ cat1*TPER9_08+ cat2*TPER9_10 + cat3*TPER9_17R+ cat4*TPER9_12R + cat5*TPER9_13R
+neuro10 =~ NA*TPER10_08 + cat1*TPER10_08 + cat2*TPER10_10 + cat3*TPER10_17R + cat4*TPER10_12R + cat5*TPER10_13R
+
+#intercepts
+TPER7_08 ~ (nu1)*1
+TPER7_10 ~ (nu2)*1
+TPER7_17R ~ (nu3)*1
+TPER7_12R ~ (nu4)*1
+TPER7_13R ~ (nu5)*1
+TPER8_08~ (nu1)*1
+TPER8_10 ~ (nu2)*1
+TPER8_17R~ (nu3)*1
+TPER8_12R ~ (nu4)*1
+TPER8_13R~ (nu5)*1
+TPER9_08~ (nu1)*1
+TPER9_10 ~ (nu2)*1
+TPER9_17R~ (nu3)*1
+TPER9_12R ~ (nu4)*1
+TPER9_13R~ (nu5)*1
+TPER10_08 ~ (nu1)*1
+TPER10_10 ~ (nu2)*1
+TPER10_17R ~ (nu3)*1
+TPER10_12R ~ (nu4)*1
+TPER10_13R ~ (nu5)*1
+
+TPER7_08 ~~ TPER8_08 + TPER9_08 + TPER10_08
+TPER8_08 ~~ TPER9_08 + TPER10_08
+TPER9_08 ~~ TPER10_08
+
+TPER7_10 ~~ TPER8_10 + TPER9_10 + TPER10_10
+TPER8_10 ~~ TPER9_10 + TPER10_10
+TPER9_10 ~~ TPER10_10
+
+TPER7_17R ~~ TPER8_17R + TPER9_17R + TPER10_17R
+TPER8_17R ~~ TPER9_17R + TPER10_17R
+TPER9_17R ~~ TPER10_17R
+
+TPER7_12R ~~ TPER8_12R + TPER9_12R + TPER10_12R
+TPER8_12R ~~ TPER9_12R + TPER10_12R
+TPER9_12R ~~ TPER10_12R
+
+TPER7_13R ~~ TPER8_13R + TPER9_13R + TPER10_13R
+TPER8_13R ~~ TPER9_13R + TPER10_13R
+TPER9_13R ~~ TPER10_13R
+
+# intercept and slope with fixed coefficients
+Nint =~ 1*neuro7 + 1*neuro8 + 1*neuro9 + 1*neuro10
+Ndiff =~ 0*neuro7 + 1*neuro8 + 2*neuro9 + 3*neuro10
+
+Nint ~~ Nint
+Ndiff ~~ Ndiff
+Nint ~ 1
+Ndiff ~ 1
+neuro7 ~ 0*1
+neuro8 ~ 0*1
+neuro9 ~ 0*1
+neuro10 ~ 0*1
+
+neuro7~~u*neuro7
+neuro8~~u*neuro8
+neuro9~~u*neuro9
+neuro10~~u*neuro10
+
+#model constraints
+cat1 == 4 - cat2 - cat3 - cat4
+(nu1) == 0 - (nu2) - (nu3) - (nu4)'
+fitN_t <- growth(model, missing="ML", data = y_t_all)
+fitN_t_est<-parameterEstimates(fitN_t)
+fitN_t_est<-fitN_t_est[c(79:82,111),]
+fitN_t_cfi<-fitMeasures(fitN_t, "cfi")
+
+#Model fit
+fitN_t_cfi
+summary(fitN_t)
+```
+
+### Openness
+```{r}
+model <- '
+## define latent variables
+open7 =~ NA*TPER7_03 + cat1*TPER7_03 + cat2*TPER7_09 + cat3*TPER7_14 + cat4*TPER7_18R + cat5*TPER7_25R
+open8 =~ NA*TPER8_03 + cat1*TPER8_03 + cat2*TPER8_09 + cat3*TPER8_14+ cat4*TPER8_18R + cat5*TPER8_25R
+open9 =~ NA*TPER9_03 + cat1*TPER9_03 + cat2*TPER9_09 + cat3*TPER9_14+ cat4*TPER9_18R + cat5*TPER9_25R
+open10 =~ NA*TPER10_03 + cat1*TPER10_03 + cat2*TPER10_09 + cat3*TPER10_14 + cat4*TPER10_18R + cat5*TPER10_25R
+
+#intercepts
+TPER7_03 ~ (nu1)*1
+TPER7_09 ~ (nu2)*1
+TPER7_14 ~ (nu3)*1
+TPER7_18R ~ (nu4)*1
+TPER7_25R ~ (nu5)*1
+TPER8_03~ (nu1)*1
+TPER8_09 ~ (nu2)*1
+TPER8_14~ (nu3)*1
+TPER8_18R ~ (nu4)*1
+TPER8_25R~ (nu5)*1
+TPER9_03~ (nu1)*1
+TPER9_09 ~ (nu2)*1
+TPER9_14~ (nu3)*1
+TPER9_18R ~ (nu4)*1
+TPER9_25R~ (nu5)*1
+TPER10_03 ~ (nu1)*1
+TPER10_09 ~ (nu2)*1
+TPER10_14 ~ (nu3)*1
+TPER10_18R ~ (nu4)*1
+TPER10_25R ~ (nu5)*1
+
+TPER7_03 ~~ TPER8_03 + TPER9_03 + TPER10_03
+TPER8_03 ~~ TPER9_03 + TPER10_03
+TPER9_03 ~~ TPER10_03
+
+TPER7_09 ~~ TPER8_09 + TPER9_09 + TPER10_09
+TPER8_09 ~~ TPER9_09 + TPER10_09
+TPER9_09 ~~ TPER10_09
+
+TPER7_14 ~~ TPER8_14 + TPER9_14 + TPER10_14
+TPER8_14 ~~ TPER9_14 + TPER10_14
+TPER9_14 ~~ TPER10_14
+
+TPER7_18R ~~ TPER8_18R + TPER9_18R + TPER10_18R
+TPER8_18R ~~ TPER9_18R + TPER10_18R
+TPER9_18R ~~ TPER10_18R
+
+TPER7_25R ~~ TPER8_25R + TPER9_25R + TPER10_25R
+TPER8_25R ~~ TPER9_25R + TPER10_25R
+TPER9_25R ~~ TPER10_25R
+
+# intercept and slope with fixed coefficients
+Oint =~ 1*open7 + 1*open8 + 1*open9 + 1*open10
+Odiff =~ 0*open7 + 1*open8 + 2*open9 + 3*open10
+
+Oint ~~ Oint
+Odiff ~~ Odiff
+Oint ~ 1
+Odiff ~ 1
+open7 ~ 0*1
+open8 ~ 0*1
+open9 ~ 0*1
+open10 ~ 0*1
+
+open7~~u*open7
+open8~~u*open8
+open9~~u*open9
+open10~~u*open10
+
+#model constraints
+cat1 == 4 - cat2 - cat3 - cat4
+(nu1) == 0 - (nu2) - (nu3) - (nu4)'
+fitO_t <- growth(model, missing="ML", data = y_t_all)
+fitO_t_est<-parameterEstimates(fitO_t)
+fitO_t_est<-fitO_t_est[c(79:82,111),]
+fitO_t_cfi<-fitMeasures(fitO_t, "cfi")
+
+#Model fit
+fitO_t_cfi
+summary(fitO_t)
+```
+
+## Summary: Teacher-Report
+```{r}
+summary_E_t<-rbind(fitE_t_est,fitA_t_est,fitC_t_est,fitN_t_est,fitO_t_est)
+summary_E_t
+```
+
+Overall, from teachers' perspectives, students became less extraverted and less neurotic between 7th and 10th grade. However, there was no evidence of substantial individual differences in the degree to which students changed.
+
+
+These are interesting results, but they collapse over a lot of important information. The time between 12 years old and 16 years old, while all considered "adolescence", is a time of considerable change. What if we want to know exactly where change was happening? How can we get a more fine-grained approach? Can we perhaps even target which variables might be related to changing more than one's peers during a given year?
+
+# Latent Change Score Models
+## Two time points
+
+```{r}
+model <- 'extra7 =~ 1*TPER7_01 + cat1*TPER7_04
+extra8 =~ 1*TPER8_01 + cat1*TPER8_04
+
+extra8 ~ 1*extra7
+e_s =~ 1*extra8    
+extra8 ~ 0*1        
+extra8 ~~ 0*extra8
+
+e_s ~ 1          
+extra7 ~  1      
+e_s ~~  e_s 
+extra7 ~~ extra7 
+e_s ~ extra7
+
+TPER7_01~~TPER8_01 
+TPER7_04~~TPER8_04 
+
+TPER7_01~~TPER7_01
+TPER7_04~~TPER7_04
+
+TPER8_01~~TPER8_01
+TPER8_04~~TPER8_04'
+corr_fit <- sem(model, data=y_t_all, missing="ML")
+summary(corr_fit)
+```
+
+```{r}
+model <- 'extra7 =~ 1*TPER7_01 + cat1*TPER7_04
+extra8 =~ 1*TPER8_01 + cat1*TPER8_04
+
+extra8 ~ 1*extra7
+e_s =~ 1*extra8    
+extra8 ~ 0*1        
+extra8 ~~ 0*extra8
+
+e_s ~ 1          
+extra7 ~  1      
+e_s ~~  e_s 
+extra7 ~~ extra7 
+e_s ~ extra7
+
+TPER7_01~~TPER8_01 
+TPER7_04~~TPER8_04 
+
+TPER7_01~~TPER7_01
+TPER7_04~~TPER7_04
+
+TPER8_01~~TPER8_01
+TPER8_04~~TPER8_04
+
+agree7 =~ 1*TPER7_05 + cat1*TPER7_07
+agree8 =~ 1*TPER8_05 + cat1*TPER8_07
+
+agree8 ~ 1*agree7
+a_s =~ 1*agree8    
+agree8 ~ 0*1        
+agree8 ~~ 0*agree8
+
+a_s ~ 1          
+agree7 ~  1      
+a_s ~~  a_s 
+agree7 ~~ agree7 
+a_s ~ agree7
+
+TPER7_05~~TPER8_05 
+TPER7_07~~TPER8_07 
+
+TPER7_05~~TPER7_05
+TPER7_07~~TPER7_07
+
+TPER8_05~~TPER8_05
+TPER8_07~~TPER8_07
+
+consc7 =~ 1*TPER7_02 + cat1*TPER7_06
+consc8 =~ 1*TPER8_02 + cat1*TPER8_06
+
+consc8 ~ 1*consc7
+c_s =~ 1*consc8    
+consc8 ~ 0*1        
+consc8 ~~ 0*consc8
+
+c_s ~ 1          
+consc7 ~  1      
+c_s ~~  c_s 
+consc7 ~~ consc7 
+c_s ~ consc7
+
+TPER7_02~~TPER8_02
+TPER7_06~~TPER8_06 
+
+TPER7_02~~TPER7_02
+TPER7_06~~TPER7_06
+
+TPER8_02~~TPER8_02
+TPER8_06~~TPER8_06
+
+neuro7 =~ 1*TPER7_08 + cat1*TPER7_10
+neuro8 =~ 1*TPER8_08 + cat1*TPER8_10
+
+neuro8 ~ 1*neuro7
+n_s =~ 1*neuro8    
+neuro8 ~ 0*1        
+neuro8 ~~ 0*neuro8
+
+n_s ~ 1          
+neuro7 ~  1      
+n_s ~~ n_s 
+neuro7 ~~ neuro7 
+n_s ~ neuro7
+
+TPER7_08~~TPER8_08
+TPER7_10~~TPER8_10 
+
+TPER7_08~~TPER7_08
+TPER7_10~~TPER7_10
+
+TPER8_08~~TPER8_08
+TPER8_10~~TPER8_10
+
+open7 =~ 1*TPER7_03 + cat1*TPER7_09
+open8 =~ 1*TPER8_03 + cat1*TPER8_09
+
+open8 ~ 1*open7
+o_s =~ 1*open8    
+open8 ~ 0*1        
+open8 ~~ 0*open8
+
+o_s ~ 1          
+open7 ~  1      
+o_s ~~ o_s 
+open7 ~~ open7 
+o_s ~ open7
+
+TPER7_03~~TPER8_03
+TPER7_09~~TPER8_09 
+
+TPER7_03~~TPER7_03
+TPER7_09~~TPER7_09
+
+TPER8_03~~TPER8_03
+TPER8_09~~TPER8_09
+
+## Correlated change!
+e_s ~~ a_s + c_s + n_s + o_s
+a_s ~~ c_s + n_s + o_s
+c_s ~~ n_s + o_s
+n_s ~~ o_s'
+corr_fit <- sem(model, data=y_t_all, missing="ML")
+summary(corr_fit)
+```
+
+# "True Intraindividual Change Score" (TIC) Models: "Baseline version" (TIC-1)
+## Student-Report (TIC-1)
+### Extraversion
+```{r}
+model<-'PRS7_01 ~ 0*1
+PRS7_04 ~ (nu1)*1
+
+PRS8_01~ 0*1
+PRS8_04 ~ (nu1)*1
+
+PRS9_01~ 0*1
+PRS9_04 ~ (nu1)*1
+
+PRS10_01 ~ 0*1
+PRS10_04 ~ (nu1)*1
+
+#define latent variables
+extra7 =~ 1*PRS7_01 + 1*PRS7_04
+extra8 =~ 1*PRS8_01 + 1*PRS8_04
+extra9 =~ 1*PRS9_01 + 1*PRS9_04
+extra10 =~ 1*PRS10_01 + 1*PRS10_04
+
+PRS7_01 ~~ PRS8_01 + PRS9_01 + PRS10_01
+PRS8_01 ~~ PRS9_01 + PRS10_01
+PRS9_01 ~~ PRS10_01
+
+PRS7_04 ~~ PRS8_04 + PRS9_04 + PRS10_04
+PRS8_04 ~~ PRS9_04 + PRS10_04
+PRS9_04 ~~ PRS10_04
+
+extra7 ~ 0*1
+extra8 ~ 0*1
+extra9 ~ 0*1
+extra10 ~ 0*1
+
+extra7 ~~ 0*extra7
+extra8 ~~ 0*extra8
+extra9 ~~ 0*extra9
+extra10 ~~ 0*extra10
+
+t7e =~ 1*extra7 + 1*extra8 + 1*extra9 + 1*extra10
+t7e ~ 1
+t7e ~~ t7e
+
+d8e =~ 1*extra8
+d8e ~~ d8e
+d8e ~ 1
+
+d9e =~ 1*extra9
+d9e ~~ d9e
+d9e ~ 1
+
+d10e =~ 1*extra10
+d10e ~~ d10e
+d10e ~ 1
+
+t7e ~~ d8e + d9e + d10e
+d8e ~~ d9e + d10e
+d9e ~~ d10e'
+
+fitE_s <- sem(model, missing="ML", data = y_t_all)
+fitE_s_est<-parameterEstimates(fitE_s)
+fitE_s_est<-fitE_s_est[c(41:42,46:47,50:51,53:54),]
+fitE_s_cfi<-fitMeasures(fitE_s, "cfi")
+fitE_s_cfi
+summary(fitE_s)
+```
+### Agreeableness
+```{r}
+model<-
+'PRS7_05 ~ 0*1
+PRS7_07 ~ (nu1)*1
+
+PRS8_05 ~ 0*1
+PRS8_07 ~ (nu1)*1
+
+PRS9_05 ~ 0*1
+PRS9_07 ~ (nu1)*1
+
+PRS10_05 ~ 0*1
+PRS10_07 ~ (nu1)*1
+
+#define latent variables
+agree7 =~ 1*PRS7_05 + 1*PRS7_07
+agree8 =~ 1*PRS8_05 + 1*PRS8_07
+agree9 =~ 1*PRS9_05 + 1*PRS9_07
+agree10 =~ 1*PRS10_05 + 1*PRS10_07
+
+PRS7_05 ~~ PRS8_05 + PRS9_05 + PRS10_05
+PRS8_05 ~~ PRS9_05 + PRS10_05
+PRS9_05 ~~ PRS10_05
+
+PRS7_07 ~~ PRS8_07 + PRS9_07 + PRS10_07
+PRS8_07 ~~ PRS9_07 + PRS10_07
+PRS9_07 ~~ PRS10_07
+
+agree7 ~ 0*1
+agree8 ~ 0*1
+agree9 ~ 0*1
+agree10 ~ 0*1
+
+agree7 ~~ 0*agree7
+agree8 ~~ 0*agree8
+agree9 ~~ 0*agree9
+agree10 ~~ 0*agree10
+
+t7a =~ 1*agree7 + 1*agree8 + 1*agree9 + 1*agree10
+t7a ~ 1
+t7a ~~ t7a
+
+d8a =~ 1*agree8
+d8a ~~ d8a
+d8a ~ 1
+
+d9a =~ 1*agree9
+d9a ~~ d9a
+d9a ~ 1
+
+d10a =~ 1*agree10
+d10a ~~ d10a
+d10a ~ 1
+
+t7a ~~ d8a + d9a + d10a
+d8a ~~ d9a + d10a
+d9a ~~ d10a'
+
+fitA_s <- sem(model, missing="ML", data = y_t_all)
+fitA_s_est<-parameterEstimates(fitA_s)
+fitA_s_est<-fitA_s_est[c(41:42,46:47,50:51,53:54),]
+fitA_s_cfi<-fitMeasures(fitA_s, "cfi")
+fitA_s_cfi
+summary(fitA_s)
+
+```
+## Conscientiousness 
+```{r}
+model <-
+'PRS7_02 ~ 0*1
+PRS7_06 ~ (nu1)*1
+
+PRS8_02~ 0*1
+PRS8_06 ~ (nu1)*1
+
+PRS9_02~ 0*1
+PRS9_06 ~ (nu1)*1
+
+PRS10_02 ~ 0*1
+PRS10_06 ~ (nu1)*1
+
+#define latent variables
+consc7 =~ 1*PRS7_02 + 1*PRS7_06
+consc8 =~ 1*PRS8_02 + 1*PRS8_06
+consc9 =~ 1*PRS9_02 + 1*PRS9_06
+consc10 =~ 1*PRS10_02 + 1*PRS10_06
+
+PRS7_02 ~~ PRS8_02 + PRS9_02 + PRS10_02
+PRS8_02 ~~ PRS9_02 + PRS10_02
+PRS9_02 ~~ PRS10_02
+
+PRS7_06 ~~ PRS8_06 + PRS9_06 + PRS10_06
+PRS8_06 ~~ PRS9_06 + PRS10_06
+PRS9_06 ~~ PRS10_06
+
+consc7 ~ 0*1
+consc8 ~ 0*1
+consc9 ~ 0*1
+consc10 ~ 0*1
+
+consc7 ~~ 0*consc7
+consc8 ~~ 0*consc8
+consc9 ~~ 0*consc9
+consc10 ~~ 0*consc10
+
+t7c =~ 1*consc7 + 1*consc8 + 1*consc9 + 1*consc10
+t7c ~ 1
+t7c ~~ t7c
+
+d8c =~ 1*consc8
+d8c ~~ d8c
+d8c ~ 1
+
+d9c =~ 1*consc9
+d9c ~~ d9c
+d9c ~ 1
+
+d10c =~ 1*consc10
+d10c ~~ d10c
+d10c ~ 1
+
+t7c ~~ d8c + d9c + d10c
+d8c ~~ d9c + d10c
+d9c ~~ d10c'
+
+fitC_s <- sem(model, missing="ML", data = y_t_all)
+fitC_s_est<-parameterEstimates(fitC_s)
+fitC_s_est<-fitC_s_est[c(41:42,46:47,50:51,53:54),]
+fitC_s_cfi<-fitMeasures(fitC_s, "cfi")
+fitC_s_cfi
+summary(fitC_s)
+
+```
+### Neuroticism 
+```{r}
+model <-
+'PRS7_08 ~ 0*1
+PRS7_10 ~ (nu1)*1
+
+PRS8_08~ 0*1
+PRS8_10 ~ (nu1)*1
+
+PRS9_08~ 0*1
+PRS9_10 ~ (nu1)*1
+
+PRS10_08 ~ 0*1
+PRS10_10 ~ (nu1)*1
+
+#define latent variables
+neuro7 =~ 1*PRS7_08 + 1*PRS7_10
+neuro8 =~ 1*PRS8_08 + 1*PRS8_10
+neuro9 =~ 1*PRS9_08 + 1*PRS9_10
+neuro10 =~ 1*PRS10_08 + 1*PRS10_10
+
+PRS7_08 ~~ PRS8_08 + PRS9_08 + PRS10_08
+PRS8_08 ~~ PRS9_08 + PRS10_08
+PRS9_08 ~~ PRS10_08
+
+PRS7_10 ~~ PRS8_10 + PRS9_10 + PRS10_10
+PRS8_10 ~~ PRS9_10 + PRS10_10
+PRS9_10 ~~ PRS10_10
+
+neuro7 ~ 0*1
+neuro8 ~ 0*1
+neuro9 ~ 0*1
+neuro10 ~ 0*1
+
+neuro7 ~~ 0*neuro7
+neuro8 ~~ 0*neuro8
+neuro9 ~~ 0*neuro9
+neuro10 ~~ 0*neuro10
+
+t7n =~ 1*neuro7 + 1*neuro8 + 1*neuro9 + 1*neuro10
+t7n ~ 1
+t7n ~~ t7n
+
+d8n =~ 1*neuro8
+d8n ~~ d8n
+d8n ~ 1
+
+d9n =~ 1*neuro9
+d9n ~~ d9n
+d9n ~ 1
+
+d10n =~ 1*neuro10
+d10n ~~ d10n
+d10n ~ 1
+
+t7n ~~ d8n + d9n + d10n
+d8n ~~ d9n + d10n
+d9n ~~ d10n'
+
+fitN_s <- sem(model, missing="ML", data = y_t_all)
+fitN_s_est<-parameterEstimates(fitN_s)
+fitN_s_est<-fitN_s_est[c(41:42,46:47,50:51,53:54),]
+fitN_s_cfi<-fitMeasures(fitN_s, "cfi")
+fitN_s_cfi
+summary(fitN_s)
+
+```
+### Openness
+```{r}
+model<-'PRS7_03 ~ 0*1
+PRS7_09 ~ (nu1)*1
+
+PRS8_03 ~ 0*1
+PRS8_09 ~ (nu1)*1
+
+PRS9_03 ~ 0*1
+PRS9_09 ~ (nu1)*1
+
+PRS10_03 ~ 0*1
+PRS10_09 ~ (nu1)*1
+
+#define latent variables
+open7 =~ 1*PRS7_03 + 1*PRS7_09
+open8 =~ 1*PRS8_03 + 1*PRS8_09
+open9 =~ 1*PRS9_03 + 1*PRS9_09
+open10 =~ 1*PRS10_03 + 1*PRS10_09
+
+PRS7_03 ~~ PRS8_03 + PRS9_03 + PRS10_03
+PRS8_03 ~~ PRS9_03 + PRS10_03
+PRS9_03 ~~ PRS10_03
+
+PRS7_09 ~~ PRS8_09 + PRS9_09 + PRS10_09
+PRS8_09 ~~ PRS9_09 + PRS10_09
+PRS9_09 ~~ PRS10_09
+
+open7 ~ 0*1
+open8 ~ 0*1
+open9 ~ 0*1
+open10 ~ 0*1
+
+open7 ~~ 0*open7
+open8 ~~ 0*open8
+open9 ~~ 0*open9
+open10 ~~ 0*open10
+
+t7o =~ 1*open7 + 1*open8 + 1*open9 + 1*open10
+t7o ~ 1
+t7o ~~ t7o
+
+d8o =~ 1*open8
+d8o ~~ d8o
+d8o ~ 1
+
+d9o =~ 1*open9
+d9o ~~ d9o
+d9o ~ 1
+
+d10o =~ 1*open10
+d10o ~~ d10o
+d10o ~ 1
+
+t7o ~~ d8o + d9o + d10o
+d8o ~~ d9o + d10o
+d9o ~~ d10o'
+
+fitO_s <- sem(model, missing="ML", data = y_t_all)
+fitO_s_est<-parameterEstimates(fitO_s)
+fitO_s_est<-fitO_s_est[c(41:42,46:47,50:51,53:54),]
+fitO_s_cfi<-fitMeasures(fitO_s, "cfi")
+fitO_s_cfi
+summary(fitO_s)
+
+```
+## Summary: Student-Report
+```{r}
+summary_s<-rbind(fitE_s_est,fitA_s_est,fitC_s_est,fitN_s_est,fitO_s_est)
+summary_s
+```
+
+## Teacher-Report (TIC-2)
+### Extraversion
+```{r}
+model <-
+'extra7 =~ 1*TPER7_01 + cat6*TPER7_04 + cat2*TPER7_15 + cat3*TPER7_19R + cat4*TPER7_22R
+extra8 =~ 1*TPER8_01 + cat6*TPER8_04 + cat2*TPER8_15 + cat3*TPER8_19R + cat4*TPER8_22R
+extra9 =~ 1*TPER9_01 + cat6*TPER9_04 + cat2*TPER9_15 + cat3*TPER9_19R + cat4*TPER9_22R
+extra10 =~ 1*TPER10_01 + cat6*TPER10_04 + cat2*TPER10_15 + cat3*TPER10_19R + cat4*TPER10_22R
+
+TPER7_01 ~ 0*1
+TPER7_04 ~ (nu1)*1
+TPER7_15 ~ (nu2)*1
+TPER7_19R ~ (nu3)*1
+TPER7_22R ~ (nu4)*1
+
+TPER8_01~ 0*1
+TPER8_04 ~ (nu1)*1
+TPER8_15~ (nu2)*1
+TPER8_19R ~ (nu3)*1
+TPER8_22R~ (nu4)*1
+
+TPER9_01~ 0*1
+TPER9_04 ~ (nu1)*1
+TPER9_15~ (nu2)*1
+TPER9_19R ~ (nu3)*1
+TPER9_22R~ (nu4)*1
+
+TPER10_01 ~ 0*1
+TPER10_04 ~ (nu1)*1
+TPER10_15 ~ (nu2)*1
+TPER10_19R ~ (nu3)*1
+TPER10_22R ~ (nu4)*1
+
+TPER7_01 ~~ TPER8_01 + TPER9_01 + TPER10_01
+TPER8_01 ~~ TPER9_01 + TPER10_01
+TPER9_01 ~~ TPER10_01
+
+TPER7_04 ~~ TPER8_04 + TPER9_04 + TPER10_04
+TPER8_04 ~~ TPER9_04 + TPER10_04
+TPER9_04 ~~ TPER10_04
+
+TPER7_15 ~~ TPER8_15 + TPER9_15 + TPER10_15
+TPER8_15 ~~ TPER9_15 + TPER10_15
+TPER9_15 ~~ TPER10_15
+
+TPER7_19R ~~ TPER8_19R + TPER9_19R + TPER10_19R
+TPER8_19R ~~ TPER9_19R + TPER10_19R
+TPER9_19R ~~ TPER10_19R
+
+TPER7_22R ~~ TPER8_22R + TPER9_22R + TPER10_22R
+TPER8_22R ~~ TPER9_22R + TPER10_22R
+TPER9_22R ~~ TPER10_22R
+
+extra7 ~ 0*1
+extra8 ~ 0*1
+extra9 ~ 0*1
+extra10 ~ 0*1
+
+extra7 ~~ 0*extra7
+extra8 ~~ 0*extra8
+extra9 ~~ 0*extra9
+extra10 ~~ 0*extra10
+
+t7e =~ 1*extra7 + 1*extra8 + 1*extra9 + 1*extra10
+t7e ~ 1
+t7e ~~ t7e
+
+d8e =~ 1*extra8
+d8e ~~ d8e
+d8e ~ 1
+
+d9e =~ 1*extra9
+d9e ~~ d9e
+d9e ~ 1
+
+d10e =~ 1*extra10
+d10e ~~ d10e
+d10e ~ 1
+
+t7e ~~ d8e + d9e + d10e
+d8e ~~ d9e + d10e
+d9e ~~ d10e'
+
+fitE_t <- sem(model, missing="ML", data = y_t_all)
+fitE_t_est<-parameterEstimates(fitE_t)
+fitE_t_est<-fitE_t_est[c(83,84,88,89,92,93,95,96),]
+fitE_t_cfi<-fitMeasures(fitE_t, "cfi")
+fitE_t_cfi
+summary(fitE_t)
+```
+### Agreeableness
+```{r}
+model<-'
+agree7 =~ 1*TPER7_05 + cat6*TPER7_07 + cat2*TPER7_11 + cat3*TPER7_20R + cat4*TPER7_23R
+agree8 =~ 1*TPER8_05 + cat6*TPER8_07 + cat2*TPER8_11 + cat3*TPER8_20R + cat4*TPER8_23R
+agree9 =~ 1*TPER9_05 + cat6*TPER9_07 + cat2*TPER9_11 + cat3*TPER9_20R + cat4*TPER9_23R
+agree10 =~ 1*TPER10_05 + cat6*TPER10_07 + cat2*TPER10_11 + cat3*TPER10_20R + cat4*TPER10_23R
+
+TPER7_05 ~ 0*1
+TPER7_07 ~ (nu1)*1
+TPER7_11 ~ (nu2)*1
+TPER7_20R ~ (nu3)*1
+TPER7_23R ~ (nu4)*1
+
+TPER8_05~ 0*1
+TPER8_07 ~ (nu1)*1
+TPER8_11~ (nu2)*1
+TPER8_20R ~ (nu3)*1
+TPER8_23R~ (nu4)*1
+
+TPER9_05~ 0*1
+TPER9_07 ~ (nu1)*1
+TPER9_11~ (nu2)*1
+TPER9_20R ~ (nu3)*1
+TPER9_23R~ (nu4)*1
+
+TPER10_05 ~ 0*1
+TPER10_07 ~ (nu1)*1
+TPER10_11 ~ (nu2)*1
+TPER10_20R ~ (nu3)*1
+TPER10_23R ~ (nu4)*1
+
+TPER7_05 ~~ TPER8_05 + TPER9_05 + TPER10_05
+TPER8_05 ~~ TPER9_05 + TPER10_05
+TPER9_05 ~~ TPER10_05
+
+TPER7_07 ~~ TPER8_07 + TPER9_07 + TPER10_07
+TPER8_07 ~~ TPER9_07 + TPER10_07
+TPER9_07 ~~ TPER10_07
+
+TPER7_11 ~~ TPER8_11 + TPER9_11 + TPER10_11
+TPER8_11 ~~ TPER9_11 + TPER10_11
+TPER9_11 ~~ TPER10_11
+
+TPER7_20R ~~ TPER8_20R + TPER9_20R + TPER10_20R
+TPER8_20R ~~ TPER9_20R + TPER10_20R
+TPER9_20R ~~ TPER10_20R
+
+TPER7_23R ~~ TPER8_23R + TPER9_23R + TPER10_23R
+TPER8_23R ~~ TPER9_23R + TPER10_23R
+TPER9_23R ~~ TPER10_23R
+
+agree7 ~ 0*1
+agree8 ~ 0*1
+agree9 ~ 0*1
+agree10 ~ 0*1
+
+agree7 ~~ 0*agree7
+agree8 ~~ 0*agree8
+agree9 ~~ 0*agree9
+agree10 ~~ 0*agree10
+
+t7a =~ 1*agree7 + 1*agree8 + 1*agree9 + 1*agree10
+t7a ~ 1
+t7a ~~ t7a
+
+d8a =~ 1*agree8
+d8a ~~ d8a
+d8a ~ 1
+
+d9a =~ 1*agree9
+d9a ~~ d9a
+d9a ~ 1
+
+d10a =~ 1*agree10
+d10a ~~ d10a
+d10a ~ 1
+
+t7a ~~ d8a + d9a + d10a
+d8a ~~ d9a + d10a
+d9a ~~ d10a'
+
+fitA_t <- sem(model, missing="ML", data = y_t_all)
+fitA_t_est<-parameterEstimates(fitA_t)
+fitA_t_est<-fitA_t_est[c(83,84,88,89,92,93,95,96),]
+fitA_t_cfi<-fitMeasures(fitA_t, "cfi")
+fitA_t_cfi
+summary(fitA_t)
+
+```
+### Conscientiousness
+```{r}
+model<-'consc7 =~ 1*TPER7_02 + cat6*TPER7_06 + cat2*TPER7_16 + cat3*TPER7_21R + cat4*TPER7_24R
+consc8 =~ 1*TPER8_02 + cat6*TPER8_06 + cat2*TPER8_16 + cat3*TPER8_21R + cat4*TPER8_24R
+consc9 =~ 1*TPER9_02 + cat6*TPER9_06 + cat2*TPER9_16 + cat3*TPER9_21R + cat4*TPER9_24R
+consc10 =~ 1*TPER10_02 + cat6*TPER10_06 + cat2*TPER10_16 + cat3*TPER10_21R + cat4*TPER10_24R
+
+TPER7_02 ~ 0*1
+TPER7_06 ~ (nu1)*1
+TPER7_16 ~ (nu2)*1
+TPER7_21R ~ (nu3)*1
+TPER7_24R ~ (nu4)*1
+
+TPER8_02~ 0*1
+TPER8_06 ~ (nu1)*1
+TPER8_16~ (nu2)*1
+TPER8_21R ~ (nu3)*1
+TPER8_24R~ (nu4)*1
+
+TPER9_02~ 0*1
+TPER9_06 ~ (nu1)*1
+TPER9_16~ (nu2)*1
+TPER9_21R ~ (nu3)*1
+TPER9_24R~ (nu4)*1
+
+TPER10_02 ~ 0*1
+TPER10_06 ~ (nu1)*1
+TPER10_16 ~ (nu2)*1
+TPER10_21R ~ (nu3)*1
+TPER10_24R ~ (nu4)*1
+
+TPER7_02 ~~ TPER8_02 + TPER9_02 + TPER10_02
+TPER8_02 ~~ TPER9_02 + TPER10_02
+TPER9_02 ~~ TPER10_02
+
+TPER7_06 ~~ TPER8_06 + TPER9_06 + TPER10_06
+TPER8_06 ~~ TPER9_06 + TPER10_06
+TPER9_06 ~~ TPER10_06
+
+TPER7_16 ~~ TPER8_16 + TPER9_16 + TPER10_16
+TPER8_16 ~~ TPER9_16 + TPER10_16
+TPER9_16 ~~ TPER10_16
+
+TPER7_21R ~~ TPER8_21R + TPER9_21R + TPER10_21R
+TPER8_21R ~~ TPER9_21R + TPER10_21R
+TPER9_21R ~~ TPER10_21R
+
+TPER7_24R ~~ TPER8_24R + TPER9_24R + TPER10_24R
+TPER8_24R ~~ TPER9_24R + TPER10_24R
+TPER9_24R ~~ TPER10_24R
+
+consc7 ~ 0*1
+consc8 ~ 0*1
+consc9 ~ 0*1
+consc10 ~ 0*1
+
+consc7 ~~ 0*consc7
+consc8 ~~ 0*consc8
+consc9 ~~ 0*consc9
+consc10 ~~ 0*consc10
+
+t7c =~ 1*consc7 + 1*consc8 + 1*consc9 + 1*consc10
+t7c ~ 1
+t7c ~~ t7c
+
+d8c =~ 1*consc8
+d8c ~~ d8c
+d8c ~ 1
+
+d9c =~ 1*consc9
+d9c ~~ d9c
+d9c ~ 1
+
+d10c =~ 1*consc10
+d10c ~~ d10c
+d10c ~ 1
+
+t7c ~~ d8c + d9c + d10c
+d8c ~~ d9c + d10c
+d9c ~~ d10c'
+
+fitC_t <- sem(model, missing="ML", data = y_t_all)
+fitC_t_est<-parameterEstimates(fitC_t)
+fitC_t_est<-fitC_t_est[c(83,84,88,89,92,93,95,96),]
+fitC_t_cfi<-fitMeasures(fitC_t, "cfi")
+fitC_t_cfi
+summary(fitC_t)
+
+```
+### Neuroticism
+```{r}
+model <-
+'TPER7_08 ~ 0*1
+TPER7_10 ~ (nu1)*1
+TPER7_17R ~ (nu2)*1
+TPER7_12R ~ (nu3)*1
+TPER7_13R ~ (nu4)*1
+
+TPER8_08~ 0*1
+TPER8_10 ~ (nu1)*1
+TPER8_17R~ (nu2)*1
+TPER8_12R ~ (nu3)*1
+TPER8_13R~ (nu4)*1
+
+TPER9_08~ 0*1
+TPER9_10 ~ (nu1)*1
+TPER9_17R~ (nu2)*1
+TPER9_12R ~ (nu3)*1
+TPER9_13R~ (nu4)*1
+
+TPER10_08 ~ 0*1
+TPER10_10 ~ (nu1)*1
+TPER10_17R ~ (nu2)*1
+TPER10_12R ~ (nu3)*1
+TPER10_13R ~ (nu4)*1
+
+#define latent variables
+neuro7 =~ 1*TPER7_08 + cat6*TPER7_10 + cat2*TPER7_17R + cat3*TPER7_12R + cat4*TPER7_13R
+neuro8 =~ 1*TPER8_08 + cat6*TPER8_10 + cat2*TPER8_17R + cat3*TPER8_12R + cat4*TPER8_13R
+neuro9 =~ 1*TPER9_08 + cat6*TPER9_10 + cat2*TPER9_17R + cat3*TPER9_12R + cat4*TPER9_13R
+neuro10 =~ 1*TPER10_08 + cat6*TPER10_10 + cat2*TPER10_17R + cat3*TPER10_12R + cat4*TPER10_13R
+
+TPER7_08 ~~ TPER8_08 + TPER9_08 + TPER10_08
+TPER8_08 ~~ TPER9_08 + TPER10_08
+TPER9_08 ~~ TPER10_08
+
+TPER7_10 ~~ TPER8_10 + TPER9_10 + TPER10_10
+TPER8_10 ~~ TPER9_10 + TPER10_10
+TPER9_10 ~~ TPER10_10
+
+TPER7_17R ~~ TPER8_17R + TPER9_17R + TPER10_17R
+TPER8_17R ~~ TPER9_17R + TPER10_17R
+TPER9_17R ~~ TPER10_17R
+
+TPER7_12R ~~ TPER8_12R + TPER9_12R + TPER10_12R
+TPER8_12R ~~ TPER9_12R + TPER10_12R
+TPER9_12R ~~ TPER10_12R
+
+TPER7_13R ~~ TPER8_13R + TPER9_13R + TPER10_13R
+TPER8_13R ~~ TPER9_13R + TPER10_13R
+TPER9_13R ~~ TPER10_13R
+
+neuro7 ~ 0*1
+neuro8 ~ 0*1
+neuro9 ~ 0*1
+neuro10 ~ 0*1
+
+neuro7 ~~ u*neuro7
+neuro8 ~~ u*neuro8
+neuro9 ~~ u*neuro9
+neuro10 ~~ u*neuro10
+
+t7n =~ 1*neuro7 + 1*neuro8 + 1*neuro9 + 1*neuro10
+t7n ~ 1
+t7n ~~ t7n
+
+d8n =~ 1*neuro8
+d8n ~~ d8n
+d8n ~ 1
+
+d9n =~ 1*neuro9
+d9n ~~ d9n
+d9n ~ 1
+
+d10n =~ 1*neuro10
+d10n ~~ d10n
+d10n ~ 1
+
+t7n ~~ d8n + d9n + d10n
+d8n ~~ d9n + d10n
+d9n ~~ d10n'
+
+fitN_t <- sem(model, missing="ML", data = y_t_all)
+fitN_t_est<-parameterEstimates(fitN_t)
+fitN_t_est<-fitN_t_est[c(83,84,88,89,92,93,95,96),]
+fitN_t_cfi<-fitMeasures(fitN_t, "cfi")
+fitN_t_cfi
+summary(fitN_t)
+```
+### Openness 
+```{r}
+model <-
+'TPER7_03 ~ 0*1
+TPER7_09 ~ (nu1)*1
+TPER7_14 ~ (nu2)*1
+TPER7_18R ~ (nu3)*1
+TPER7_25R ~ (nu4)*1
+
+TPER8_03~ 0*1
+TPER8_09 ~ (nu1)*1
+TPER8_14~ (nu2)*1
+TPER8_18R ~ (nu3)*1
+TPER8_25R~ (nu4)*1
+
+TPER9_03~ 0*1
+TPER9_09 ~ (nu1)*1
+TPER9_14~ (nu2)*1
+TPER9_18R ~ (nu3)*1
+TPER9_25R~ (nu4)*1
+
+TPER10_03 ~ 0*1
+TPER10_09 ~ (nu1)*1
+TPER10_14 ~ (nu2)*1
+TPER10_18R ~ (nu3)*1
+TPER10_25R ~ (nu4)*1
+
+#define latent variables
+open7 =~ 1*TPER7_03 + cat6*TPER7_09 + cat2*TPER7_14 + cat3*TPER7_18R + cat4*TPER7_25R
+open8 =~ 1*TPER8_03 + cat6*TPER8_09 + cat2*TPER8_14 + cat3*TPER8_18R + cat4*TPER8_25R
+open9 =~ 1*TPER9_03 + cat6*TPER9_09 + cat2*TPER9_14 + cat3*TPER9_18R + cat4*TPER9_25R
+open10 =~ 1*TPER10_03 + cat6*TPER10_09 + cat2*TPER10_14 + cat3*TPER10_18R + cat4*TPER10_25R
+
+TPER7_03 ~~ TPER8_03 + TPER9_03 + TPER10_03
+TPER8_03 ~~ TPER9_03 + TPER10_03
+TPER9_03 ~~ TPER10_03
+
+TPER7_09 ~~ TPER8_09 + TPER9_09 + TPER10_09
+TPER8_09 ~~ TPER9_09 + TPER10_09
+TPER9_09 ~~ TPER10_09
+
+TPER7_14 ~~ TPER8_14 + TPER9_14 + TPER10_14
+TPER8_14 ~~ TPER9_14 + TPER10_14
+TPER9_14 ~~ TPER10_14
+
+TPER7_18R ~~ TPER8_18R + TPER9_18R + TPER10_18R
+TPER8_18R ~~ TPER9_18R + TPER10_18R
+TPER9_18R ~~ TPER10_18R
+
+TPER7_25R ~~ TPER8_25R + TPER9_25R + TPER10_25R
+TPER8_25R ~~ TPER9_25R + TPER10_25R
+TPER9_25R ~~ TPER10_25R
+
+open7 ~ 0*1
+open8 ~ 0*1
+open9 ~ 0*1
+open10 ~ 0*1
+
+open7 ~~ u*open7
+open8 ~~ u*open8
+open9 ~~ u*open9
+open10 ~~ u*open10
+
+t7o =~ 1*open7 + 1*open8 + 1*open9 + 1*open10
+t7o ~ 1
+t7o ~~ t7o
+
+d8o =~ 1*open8
+d8o ~~ d8o
+d8o ~ 1
+
+d9o =~ 1*open9
+d9o ~~ d9o
+d9o ~ 1
+
+d10o =~ 1*open10
+d10o ~~ d10o
+d10o ~ 1
+
+t7o ~~ d8o + d9o + d10o
+d8o ~~ d9o + d10o
+d9o ~~ d10o'
+
+fitO_t <- sem(model, missing="ML", data = y_t_all)
+fitO_t_est<-parameterEstimates(fitO_t)
+fitO_t_est<-fitO_t_est[c(83,84,88,89,92,93,95,96),]
+fitO_t_cfi<-fitMeasures(fitO_t, "cfi")
+fitO_t_cfi
+summary(fitO_t)
+```
+### Summary: Teacher-Report
+```{r}
+summary_t<-rbind(fitE_t_est,fitA_t_est,fitC_t_est,fitN_t_est,fitO_t_est)
+summary_t
+```
+
+
+# "True Intraindividual Change Score" (TIC) Models: "Neighbor version" (TIC-2)
+## Student-Report (TIC-2)
+### Extraversion
+```{r}
+model<-'PRS7_01 ~ 0*1
+PRS7_04 ~ (nu1)*1
+
+PRS8_01~ 0*1
+PRS8_04 ~ (nu1)*1
+
+PRS9_01~ 0*1
+PRS9_04 ~ (nu1)*1
+
+PRS10_01 ~ 0*1
+PRS10_04 ~ (nu1)*1
+
+#define latent variables
+extra7 =~ 1*PRS7_01 + 1*PRS7_04
+extra8 =~ 1*PRS8_01 + 1*PRS8_04
+extra9 =~ 1*PRS9_01 + 1*PRS9_04
+extra10 =~ 1*PRS10_01 + 1*PRS10_04
+
+PRS7_01 ~~ PRS8_01 + PRS9_01 + PRS10_01
+PRS8_01 ~~ PRS9_01 + PRS10_01
+PRS9_01 ~~ PRS10_01
+
+PRS7_04 ~~ PRS8_04 + PRS9_04 + PRS10_04
+PRS8_04 ~~ PRS9_04 + PRS10_04
+PRS9_04 ~~ PRS10_04
+
+extra7 ~ 0*1
+extra8 ~ 0*1
+extra9 ~ 0*1
+extra10 ~ 0*1
+
+extra7 ~~ 0*extra7
+extra8 ~~ 0*extra8
+extra9 ~~ 0*extra9
+extra10 ~~ 0*extra10
+
+t7e =~ 1*extra7 + 1*extra8 + 1*extra9 + 1*extra10
+t7e ~ 1
+t7e ~~ t7e
+
+d8e =~ 1*extra8 + 1*extra9 + 1*extra10
+d8e ~~ d8e
+d8e ~ 1
+
+d9e =~ 1*extra9 + 1*extra10
+d9e ~~ d9e
+d9e ~ 1
+
+d10e =~ 1*extra10
+d10e ~~ d10e
+d10e ~ 1
+
+t7e ~~ d8e + d9e + d10e
+d8e ~~ d9e + d10e
+d9e ~~ d10e'
+
+fitE_s <- sem(model, missing="ML", data = y_t_all)
+fitE_s_est<-parameterEstimates(fitE_s)
+fitE_s_est<-fitE_s_est[c(41:42,46:47,50:51,53:54),]
+fitE_s_cfi<-fitMeasures(fitE_s, "cfi")
+fitE_s_cfi
+summary(fitE_s)
+```
+### Agreeableness
+```{r}
+model<-
+'PRS7_05 ~ 0*1
+PRS7_07 ~ (nu1)*1
+
+PRS8_05 ~ 0*1
+PRS8_07 ~ (nu1)*1
+
+PRS9_05 ~ 0*1
+PRS9_07 ~ (nu1)*1
+
+PRS10_05 ~ 0*1
+PRS10_07 ~ (nu1)*1
+
+#define latent variables
+agree7 =~ 1*PRS7_05 + 1*PRS7_07
+agree8 =~ 1*PRS8_05 + 1*PRS8_07
+agree9 =~ 1*PRS9_05 + 1*PRS9_07
+agree10 =~ 1*PRS10_05 + 1*PRS10_07
+
+PRS7_05 ~~ PRS8_05 + PRS9_05 + PRS10_05
+PRS8_05 ~~ PRS9_05 + PRS10_05
+PRS9_05 ~~ PRS10_05
+
+PRS7_07 ~~ PRS8_07 + PRS9_07 + PRS10_07
+PRS8_07 ~~ PRS9_07 + PRS10_07
+PRS9_07 ~~ PRS10_07
+
+agree7 ~ 0*1
+agree8 ~ 0*1
+agree9 ~ 0*1
+agree10 ~ 0*1
+
+agree7 ~~ 0*agree7
+agree8 ~~ 0*agree8
+agree9 ~~ 0*agree9
+agree10 ~~ 0*agree10
+
+t7a =~ 1*agree7 + 1*agree8 + 1*agree9 + 1*agree10
+t7a ~ 1
+t7a ~~ t7a
+
+d8a =~ 1*agree8 + 1*agree9 + 1*agree10
+d8a ~~ d8a
+d8a ~ 1
+
+d9a =~ 1*agree9 + 1*agree10
+d9a ~~ d9a
+d9a ~ 1
+
+d10a =~ 1*agree10
+d10a ~~ d10a
+d10a ~ 1
+
+t7a ~~ d8a + d9a + d10a
+d8a ~~ d9a + d10a
+d9a ~~ d10a'
+
+fitA_s <- sem(model, missing="ML", data = y_t_all)
+fitA_s_est<-parameterEstimates(fitA_s)
+fitA_s_est<-fitA_s_est[c(41:42,46:47,50:51,53:54),]
+fitA_s_cfi<-fitMeasures(fitA_s, "cfi")
+fitA_s_cfi
+summary(fitA_s)
+
+```
+## Conscientiousness 
+```{r}
+model <-
+'PRS7_02 ~ 0*1
+PRS7_06 ~ (nu1)*1
+
+PRS8_02~ 0*1
+PRS8_06 ~ (nu1)*1
+
+PRS9_02~ 0*1
+PRS9_06 ~ (nu1)*1
+
+PRS10_02 ~ 0*1
+PRS10_06 ~ (nu1)*1
+
+#define latent variables
+consc7 =~ 1*PRS7_02 + 1*PRS7_06
+consc8 =~ 1*PRS8_02 + 1*PRS8_06
+consc9 =~ 1*PRS9_02 + 1*PRS9_06
+consc10 =~ 1*PRS10_02 + 1*PRS10_06
+
+PRS7_02 ~~ PRS8_02 + PRS9_02 + PRS10_02
+PRS8_02 ~~ PRS9_02 + PRS10_02
+PRS9_02 ~~ PRS10_02
+
+PRS7_06 ~~ PRS8_06 + PRS9_06 + PRS10_06
+PRS8_06 ~~ PRS9_06 + PRS10_06
+PRS9_06 ~~ PRS10_06
+
+consc7 ~ 0*1
+consc8 ~ 0*1
+consc9 ~ 0*1
+consc10 ~ 0*1
+
+consc7 ~~ 0*consc7
+consc8 ~~ 0*consc8
+consc9 ~~ 0*consc9
+consc10 ~~ 0*consc10
+
+t7c =~ 1*consc7 + 1*consc8 + 1*consc9 + 1*consc10
+t7c ~ 1
+t7c ~~ t7c
+
+d8c =~ 1*consc8 + 1*consc9 + 1*consc10
+d8c ~~ d8c
+d8c ~ 1
+
+d9c =~ 1*consc9 + 1*consc10
+d9c ~~ d9c
+d9c ~ 1
+
+d10c =~ 1*consc10
+d10c ~~ d10c
+d10c ~ 1
+
+t7c ~~ d8c + d9c + d10c
+d8c ~~ d9c + d10c
+d9c ~~ d10c'
+
+fitC_s <- sem(model, missing="ML", data = y_t_all)
+fitC_s_est<-parameterEstimates(fitC_s)
+fitC_s_est<-fitC_s_est[c(41:42,46:47,50:51,53:54),]
+fitC_s_cfi<-fitMeasures(fitC_s, "cfi")
+fitC_s_cfi
+summary(fitC_s)
+
+```
+### Neuroticism 
+```{r}
+model <-
+'PRS7_08 ~ 0*1
+PRS7_10 ~ (nu1)*1
+
+PRS8_08~ 0*1
+PRS8_10 ~ (nu1)*1
+
+PRS9_08~ 0*1
+PRS9_10 ~ (nu1)*1
+
+PRS10_08 ~ 0*1
+PRS10_10 ~ (nu1)*1
+
+#define latent variables
+neuro7 =~ 1*PRS7_08 + 1*PRS7_10
+neuro8 =~ 1*PRS8_08 + 1*PRS8_10
+neuro9 =~ 1*PRS9_08 + 1*PRS9_10
+neuro10 =~ 1*PRS10_08 + 1*PRS10_10
+
+PRS7_08 ~~ PRS8_08 + PRS9_08 + PRS10_08
+PRS8_08 ~~ PRS9_08 + PRS10_08
+PRS9_08 ~~ PRS10_08
+
+PRS7_10 ~~ PRS8_10 + PRS9_10 + PRS10_10
+PRS8_10 ~~ PRS9_10 + PRS10_10
+PRS9_10 ~~ PRS10_10
+
+neuro7 ~ 0*1
+neuro8 ~ 0*1
+neuro9 ~ 0*1
+neuro10 ~ 0*1
+
+neuro7 ~~ 0*neuro7
+neuro8 ~~ 0*neuro8
+neuro9 ~~ 0*neuro9
+neuro10 ~~ 0*neuro10
+
+t7n =~ 1*neuro7 + 1*neuro8 + 1*neuro9 + 1*neuro10
+t7n ~ 1
+t7n ~~ t7n
+
+d8n =~ 1*neuro8 + 1*neuro9 + 1*neuro10
+d8n ~~ d8n
+d8n ~ 1
+
+d9n =~ 1*neuro9 + 1*neuro10
+d9n ~~ d9n
+d9n ~ 1
+
+d10n =~ 1*neuro10
+d10n ~~ d10n
+d10n ~ 1
+
+t7n ~~ d8n + d9n + d10n
+d8n ~~ d9n + d10n
+d9n ~~ d10n'
+
+fitN_s <- sem(model, missing="ML", data = y_t_all)
+fitN_s_est<-parameterEstimates(fitN_s)
+fitN_s_est<-fitN_s_est[c(41:42,46:47,50:51,53:54),]
+fitN_s_cfi<-fitMeasures(fitN_s, "cfi")
+fitN_s_cfi
+summary(fitN_s)
+
+```
+### Openness
+```{r}
+model<-'PRS7_03 ~ 0*1
+PRS7_09 ~ (nu1)*1
+
+PRS8_03 ~ 0*1
+PRS8_09 ~ (nu1)*1
+
+PRS9_03 ~ 0*1
+PRS9_09 ~ (nu1)*1
+
+PRS10_03 ~ 0*1
+PRS10_09 ~ (nu1)*1
+
+#define latent variables
+open7 =~ 1*PRS7_03 + 1*PRS7_09
+open8 =~ 1*PRS8_03 + 1*PRS8_09
+open9 =~ 1*PRS9_03 + 1*PRS9_09
+open10 =~ 1*PRS10_03 + 1*PRS10_09
+
+PRS7_03 ~~ PRS8_03 + PRS9_03 + PRS10_03
+PRS8_03 ~~ PRS9_03 + PRS10_03
+PRS9_03 ~~ PRS10_03
+
+PRS7_09 ~~ PRS8_09 + PRS9_09 + PRS10_09
+PRS8_09 ~~ PRS9_09 + PRS10_09
+PRS9_09 ~~ PRS10_09
+
+open7 ~ 0*1
+open8 ~ 0*1
+open9 ~ 0*1
+open10 ~ 0*1
+
+open7 ~~ 0*open7
+open8 ~~ 0*open8
+open9 ~~ 0*open9
+open10 ~~ 0*open10
+
+t7o =~ 1*open7 + 1*open8 + 1*open9 + 1*open10
+t7o ~ 1
+t7o ~~ t7o
+
+d8o =~ 1*open8 + 1*open9 + 1*open10
+d8o ~~ d8o
+d8o ~ 1
+
+d9o =~ 1*open9 + 1*open10
+d9o ~~ d9o
+d9o ~ 1
+
+d10o =~ 1*open10
+d10o ~~ d10o
+d10o ~ 1
+
+t7o ~~ d8o + d9o + d10o
+d8o ~~ d9o + d10o
+d9o ~~ d10o'
+
+fitO_s <- sem(model, missing="ML", data = y_t_all)
+fitO_s_est<-parameterEstimates(fitO_s)
+fitO_s_est<-fitO_s_est[c(41:42,46:47,50:51,53:54),]
+fitO_s_cfi<-fitMeasures(fitO_s, "cfi")
+fitO_s_cfi
+summary(fitO_s)
+
+```
+## Summary: Student-Report
+```{r}
+summary_s<-rbind(fitE_s_est,fitA_s_est,fitC_s_est,fitN_s_est,fitO_s_est)
+summary_s
+```
+
+## Teacher-Report (TIC-2)
+### Extraversion
+```{r}
+model <-
+'extra7 =~ 1*TPER7_01 + cat6*TPER7_04 + cat2*TPER7_15 + cat3*TPER7_19R + cat4*TPER7_22R
+extra8 =~ 1*TPER8_01 + cat6*TPER8_04 + cat2*TPER8_15 + cat3*TPER8_19R + cat4*TPER8_22R
+extra9 =~ 1*TPER9_01 + cat6*TPER9_04 + cat2*TPER9_15 + cat3*TPER9_19R + cat4*TPER9_22R
+extra10 =~ 1*TPER10_01 + cat6*TPER10_04 + cat2*TPER10_15 + cat3*TPER10_19R + cat4*TPER10_22R
+
+TPER7_01 ~ 0*1
+TPER7_04 ~ (nu1)*1
+TPER7_15 ~ (nu2)*1
+TPER7_19R ~ (nu3)*1
+TPER7_22R ~ (nu4)*1
+
+TPER8_01~ 0*1
+TPER8_04 ~ (nu1)*1
+TPER8_15~ (nu2)*1
+TPER8_19R ~ (nu3)*1
+TPER8_22R~ (nu4)*1
+
+TPER9_01~ 0*1
+TPER9_04 ~ (nu1)*1
+TPER9_15~ (nu2)*1
+TPER9_19R ~ (nu3)*1
+TPER9_22R~ (nu4)*1
+
+TPER10_01 ~ 0*1
+TPER10_04 ~ (nu1)*1
+TPER10_15 ~ (nu2)*1
+TPER10_19R ~ (nu3)*1
+TPER10_22R ~ (nu4)*1
+
+TPER7_01 ~~ TPER8_01 + TPER9_01 + TPER10_01
+TPER8_01 ~~ TPER9_01 + TPER10_01
+TPER9_01 ~~ TPER10_01
+
+TPER7_04 ~~ TPER8_04 + TPER9_04 + TPER10_04
+TPER8_04 ~~ TPER9_04 + TPER10_04
+TPER9_04 ~~ TPER10_04
+
+TPER7_15 ~~ TPER8_15 + TPER9_15 + TPER10_15
+TPER8_15 ~~ TPER9_15 + TPER10_15
+TPER9_15 ~~ TPER10_15
+
+TPER7_19R ~~ TPER8_19R + TPER9_19R + TPER10_19R
+TPER8_19R ~~ TPER9_19R + TPER10_19R
+TPER9_19R ~~ TPER10_19R
+
+TPER7_22R ~~ TPER8_22R + TPER9_22R + TPER10_22R
+TPER8_22R ~~ TPER9_22R + TPER10_22R
+TPER9_22R ~~ TPER10_22R
+
+extra7 ~ 0*1
+extra8 ~ 0*1
+extra9 ~ 0*1
+extra10 ~ 0*1
+
+extra7 ~~ 0*extra7
+extra8 ~~ 0*extra8
+extra9 ~~ 0*extra9
+extra10 ~~ 0*extra10
+
+t7e =~ 1*extra7 + 1*extra8 + 1*extra9 + 1*extra10
+t7e ~ 1
+t7e ~~ t7e
+
+d8e =~ 1*extra8 + 1*extra9 + 1*extra10
+d8e ~~ d8e
+d8e ~ 1
+
+d9e =~ 1*extra9 + 1*extra10
+d9e ~~ d9e
+d9e ~ 1
+
+d10e =~ 1*extra10
+d10e ~~ d10e
+d10e ~ 1
+
+t7e ~~ d8e + d9e + d10e
+d8e ~~ d9e + d10e
+d9e ~~ d10e'
+
+fitE_t <- sem(model, missing="ML", data = y_t_all)
+fitE_t_est<-parameterEstimates(fitE_t)
+fitE_t_est<-fitE_t_est[c(83,84,88,89,92,93,95,96),]
+fitE_t_cfi<-fitMeasures(fitE_t, "cfi")
+fitE_t_cfi
+summary(fitE_t)
+```
+### Agreeableness
+```{r}
+model<-'
+agree7 =~ 1*TPER7_05 + cat6*TPER7_07 + cat2*TPER7_11 + cat3*TPER7_20R + cat4*TPER7_23R
+agree8 =~ 1*TPER8_05 + cat6*TPER8_07 + cat2*TPER8_11 + cat3*TPER8_20R + cat4*TPER8_23R
+agree9 =~ 1*TPER9_05 + cat6*TPER9_07 + cat2*TPER9_11 + cat3*TPER9_20R + cat4*TPER9_23R
+agree10 =~ 1*TPER10_05 + cat6*TPER10_07 + cat2*TPER10_11 + cat3*TPER10_20R + cat4*TPER10_23R
+
+TPER7_05 ~ 0*1
+TPER7_07 ~ (nu1)*1
+TPER7_11 ~ (nu2)*1
+TPER7_20R ~ (nu3)*1
+TPER7_23R ~ (nu4)*1
+
+TPER8_05~ 0*1
+TPER8_07 ~ (nu1)*1
+TPER8_11~ (nu2)*1
+TPER8_20R ~ (nu3)*1
+TPER8_23R~ (nu4)*1
+
+TPER9_05~ 0*1
+TPER9_07 ~ (nu1)*1
+TPER9_11~ (nu2)*1
+TPER9_20R ~ (nu3)*1
+TPER9_23R~ (nu4)*1
+
+TPER10_05 ~ 0*1
+TPER10_07 ~ (nu1)*1
+TPER10_11 ~ (nu2)*1
+TPER10_20R ~ (nu3)*1
+TPER10_23R ~ (nu4)*1
+
+TPER7_05 ~~ TPER8_05 + TPER9_05 + TPER10_05
+TPER8_05 ~~ TPER9_05 + TPER10_05
+TPER9_05 ~~ TPER10_05
+
+TPER7_07 ~~ TPER8_07 + TPER9_07 + TPER10_07
+TPER8_07 ~~ TPER9_07 + TPER10_07
+TPER9_07 ~~ TPER10_07
+
+TPER7_11 ~~ TPER8_11 + TPER9_11 + TPER10_11
+TPER8_11 ~~ TPER9_11 + TPER10_11
+TPER9_11 ~~ TPER10_11
+
+TPER7_20R ~~ TPER8_20R + TPER9_20R + TPER10_20R
+TPER8_20R ~~ TPER9_20R + TPER10_20R
+TPER9_20R ~~ TPER10_20R
+
+TPER7_23R ~~ TPER8_23R + TPER9_23R + TPER10_23R
+TPER8_23R ~~ TPER9_23R + TPER10_23R
+TPER9_23R ~~ TPER10_23R
+
+agree7 ~ 0*1
+agree8 ~ 0*1
+agree9 ~ 0*1
+agree10 ~ 0*1
+
+agree7 ~~ 0*agree7
+agree8 ~~ 0*agree8
+agree9 ~~ 0*agree9
+agree10 ~~ 0*agree10
+
+t7a =~ 1*agree7 + 1*agree8 + 1*agree9 + 1*agree10
+t7a ~ 1
+t7a ~~ t7a
+
+d8a =~ 1*agree8 + 1*agree9 + 1*agree10
+d8a ~~ d8a
+d8a ~ 1
+
+d9a =~ 1*agree9 + 1*agree10
+d9a ~~ d9a
+d9a ~ 1
+
+d10a =~ 1*agree10
+d10a ~~ d10a
+d10a ~ 1
+
+t7a ~~ d8a + d9a + d10a
+d8a ~~ d9a + d10a
+d9a ~~ d10a'
+
+fitA_t <- sem(model, missing="ML", data = y_t_all)
+fitA_t_est<-parameterEstimates(fitA_t)
+fitA_t_est<-fitA_t_est[c(83,84,88,89,92,93,95,96),]
+fitA_t_cfi<-fitMeasures(fitA_t, "cfi")
+fitA_t_cfi
+summary(fitA_t)
+
+```
+### Conscientiousness
+```{r}
+model<-'consc7 =~ 1*TPER7_02 + cat6*TPER7_06 + cat2*TPER7_16 + cat3*TPER7_21R + cat4*TPER7_24R
+consc8 =~ 1*TPER8_02 + cat6*TPER8_06 + cat2*TPER8_16 + cat3*TPER8_21R + cat4*TPER8_24R
+consc9 =~ 1*TPER9_02 + cat6*TPER9_06 + cat2*TPER9_16 + cat3*TPER9_21R + cat4*TPER9_24R
+consc10 =~ 1*TPER10_02 + cat6*TPER10_06 + cat2*TPER10_16 + cat3*TPER10_21R + cat4*TPER10_24R
+
+TPER7_02 ~ 0*1
+TPER7_06 ~ (nu1)*1
+TPER7_16 ~ (nu2)*1
+TPER7_21R ~ (nu3)*1
+TPER7_24R ~ (nu4)*1
+
+TPER8_02~ 0*1
+TPER8_06 ~ (nu1)*1
+TPER8_16~ (nu2)*1
+TPER8_21R ~ (nu3)*1
+TPER8_24R~ (nu4)*1
+
+TPER9_02~ 0*1
+TPER9_06 ~ (nu1)*1
+TPER9_16~ (nu2)*1
+TPER9_21R ~ (nu3)*1
+TPER9_24R~ (nu4)*1
+
+TPER10_02 ~ 0*1
+TPER10_06 ~ (nu1)*1
+TPER10_16 ~ (nu2)*1
+TPER10_21R ~ (nu3)*1
+TPER10_24R ~ (nu4)*1
+
+TPER7_02 ~~ TPER8_02 + TPER9_02 + TPER10_02
+TPER8_02 ~~ TPER9_02 + TPER10_02
+TPER9_02 ~~ TPER10_02
+
+TPER7_06 ~~ TPER8_06 + TPER9_06 + TPER10_06
+TPER8_06 ~~ TPER9_06 + TPER10_06
+TPER9_06 ~~ TPER10_06
+
+TPER7_16 ~~ TPER8_16 + TPER9_16 + TPER10_16
+TPER8_16 ~~ TPER9_16 + TPER10_16
+TPER9_16 ~~ TPER10_16
+
+TPER7_21R ~~ TPER8_21R + TPER9_21R + TPER10_21R
+TPER8_21R ~~ TPER9_21R + TPER10_21R
+TPER9_21R ~~ TPER10_21R
+
+TPER7_24R ~~ TPER8_24R + TPER9_24R + TPER10_24R
+TPER8_24R ~~ TPER9_24R + TPER10_24R
+TPER9_24R ~~ TPER10_24R
+
+consc7 ~ 0*1
+consc8 ~ 0*1
+consc9 ~ 0*1
+consc10 ~ 0*1
+
+consc7 ~~ 0*consc7
+consc8 ~~ 0*consc8
+consc9 ~~ 0*consc9
+consc10 ~~ 0*consc10
+
+t7c =~ 1*consc7 + 1*consc8 + 1*consc9 + 1*consc10
+t7c ~ 1
+t7c ~~ t7c
+
+d8c =~ 1*consc8 + 1*consc9 + 1*consc10
+d8c ~~ d8c
+d8c ~ 1
+
+d9c =~ 1*consc9 + 1*consc10
+d9c ~~ d9c
+d9c ~ 1
+
+d10c =~ 1*consc10
+d10c ~~ d10c
+d10c ~ 1
+
+t7c ~~ d8c + d9c + d10c
+d8c ~~ d9c + d10c
+d9c ~~ d10c'
+
+fitC_t <- sem(model, missing="ML", data = y_t_all)
+fitC_t_est<-parameterEstimates(fitC_t)
+fitC_t_est<-fitC_t_est[c(83,84,88,89,92,93,95,96),]
+fitC_t_cfi<-fitMeasures(fitC_t, "cfi")
+fitC_t_cfi
+summary(fitC_t)
+
+```
+### Neuroticism
+```{r}
+model <-
+'TPER7_08 ~ 0*1
+TPER7_10 ~ (nu1)*1
+TPER7_17R ~ (nu2)*1
+TPER7_12R ~ (nu3)*1
+TPER7_13R ~ (nu4)*1
+
+TPER8_08~ 0*1
+TPER8_10 ~ (nu1)*1
+TPER8_17R~ (nu2)*1
+TPER8_12R ~ (nu3)*1
+TPER8_13R~ (nu4)*1
+
+TPER9_08~ 0*1
+TPER9_10 ~ (nu1)*1
+TPER9_17R~ (nu2)*1
+TPER9_12R ~ (nu3)*1
+TPER9_13R~ (nu4)*1
+
+TPER10_08 ~ 0*1
+TPER10_10 ~ (nu1)*1
+TPER10_17R ~ (nu2)*1
+TPER10_12R ~ (nu3)*1
+TPER10_13R ~ (nu4)*1
+
+#define latent variables
+neuro7 =~ 1*TPER7_08 + cat6*TPER7_10 + cat2*TPER7_17R + cat3*TPER7_12R + cat4*TPER7_13R
+neuro8 =~ 1*TPER8_08 + cat6*TPER8_10 + cat2*TPER8_17R + cat3*TPER8_12R + cat4*TPER8_13R
+neuro9 =~ 1*TPER9_08 + cat6*TPER9_10 + cat2*TPER9_17R + cat3*TPER9_12R + cat4*TPER9_13R
+neuro10 =~ 1*TPER10_08 + cat6*TPER10_10 + cat2*TPER10_17R + cat3*TPER10_12R + cat4*TPER10_13R
+
+TPER7_08 ~~ TPER8_08 + TPER9_08 + TPER10_08
+TPER8_08 ~~ TPER9_08 + TPER10_08
+TPER9_08 ~~ TPER10_08
+
+TPER7_10 ~~ TPER8_10 + TPER9_10 + TPER10_10
+TPER8_10 ~~ TPER9_10 + TPER10_10
+TPER9_10 ~~ TPER10_10
+
+TPER7_17R ~~ TPER8_17R + TPER9_17R + TPER10_17R
+TPER8_17R ~~ TPER9_17R + TPER10_17R
+TPER9_17R ~~ TPER10_17R
+
+TPER7_12R ~~ TPER8_12R + TPER9_12R + TPER10_12R
+TPER8_12R ~~ TPER9_12R + TPER10_12R
+TPER9_12R ~~ TPER10_12R
+
+TPER7_13R ~~ TPER8_13R + TPER9_13R + TPER10_13R
+TPER8_13R ~~ TPER9_13R + TPER10_13R
+TPER9_13R ~~ TPER10_13R
+
+neuro7 ~ 0*1
+neuro8 ~ 0*1
+neuro9 ~ 0*1
+neuro10 ~ 0*1
+
+neuro7 ~~ u*neuro7
+neuro8 ~~ u*neuro8
+neuro9 ~~ u*neuro9
+neuro10 ~~ u*neuro10
+
+t7n =~ 1*neuro7 + 1*neuro8 + 1*neuro9 + 1*neuro10
+t7n ~ 1
+t7n ~~ t7n
+
+d8n =~ 1*neuro8 + 1*neuro9 + 1*neuro10
+d8n ~~ d8n
+d8n ~ 1
+
+d9n =~ 1*neuro9 + 1*neuro10
+d9n ~~ d9n
+d9n ~ 1
+
+d10n =~ 1*neuro10
+d10n ~~ d10n
+d10n ~ 1
+
+t7n ~~ d8n + d9n + d10n
+d8n ~~ d9n + d10n
+d9n ~~ d10n'
+
+fitN_t <- sem(model, missing="ML", data = y_t_all)
+fitN_t_est<-parameterEstimates(fitN_t)
+fitN_t_est<-fitN_t_est[c(83,84,88,89,92,93,95,96),]
+fitN_t_cfi<-fitMeasures(fitN_t, "cfi")
+fitN_t_cfi
+summary(fitN_t)
+```
+### Openness 
+```{r}
+model <-
+'TPER7_03 ~ 0*1
+TPER7_09 ~ (nu1)*1
+TPER7_14 ~ (nu2)*1
+TPER7_18R ~ (nu3)*1
+TPER7_25R ~ (nu4)*1
+
+TPER8_03~ 0*1
+TPER8_09 ~ (nu1)*1
+TPER8_14~ (nu2)*1
+TPER8_18R ~ (nu3)*1
+TPER8_25R~ (nu4)*1
+
+TPER9_03~ 0*1
+TPER9_09 ~ (nu1)*1
+TPER9_14~ (nu2)*1
+TPER9_18R ~ (nu3)*1
+TPER9_25R~ (nu4)*1
+
+TPER10_03 ~ 0*1
+TPER10_09 ~ (nu1)*1
+TPER10_14 ~ (nu2)*1
+TPER10_18R ~ (nu3)*1
+TPER10_25R ~ (nu4)*1
+
+#define latent variables
+open7 =~ 1*TPER7_03 + cat6*TPER7_09 + cat2*TPER7_14 + cat3*TPER7_18R + cat4*TPER7_25R
+open8 =~ 1*TPER8_03 + cat6*TPER8_09 + cat2*TPER8_14 + cat3*TPER8_18R + cat4*TPER8_25R
+open9 =~ 1*TPER9_03 + cat6*TPER9_09 + cat2*TPER9_14 + cat3*TPER9_18R + cat4*TPER9_25R
+open10 =~ 1*TPER10_03 + cat6*TPER10_09 + cat2*TPER10_14 + cat3*TPER10_18R + cat4*TPER10_25R
+
+TPER7_03 ~~ TPER8_03 + TPER9_03 + TPER10_03
+TPER8_03 ~~ TPER9_03 + TPER10_03
+TPER9_03 ~~ TPER10_03
+
+TPER7_09 ~~ TPER8_09 + TPER9_09 + TPER10_09
+TPER8_09 ~~ TPER9_09 + TPER10_09
+TPER9_09 ~~ TPER10_09
+
+TPER7_14 ~~ TPER8_14 + TPER9_14 + TPER10_14
+TPER8_14 ~~ TPER9_14 + TPER10_14
+TPER9_14 ~~ TPER10_14
+
+TPER7_18R ~~ TPER8_18R + TPER9_18R + TPER10_18R
+TPER8_18R ~~ TPER9_18R + TPER10_18R
+TPER9_18R ~~ TPER10_18R
+
+TPER7_25R ~~ TPER8_25R + TPER9_25R + TPER10_25R
+TPER8_25R ~~ TPER9_25R + TPER10_25R
+TPER9_25R ~~ TPER10_25R
+
+open7 ~ 0*1
+open8 ~ 0*1
+open9 ~ 0*1
+open10 ~ 0*1
+
+open7 ~~ u*open7
+open8 ~~ u*open8
+open9 ~~ u*open9
+open10 ~~ u*open10
+
+t7o =~ 1*open7 + 1*open8 + 1*open9 + 1*open10
+t7o ~ 1
+t7o ~~ t7o
+
+d8o =~ 1*open8 + 1*open9 + 1*open10
+d8o ~~ d8o
+d8o ~ 1
+
+d9o =~ 1*open9 + 1*open10
+d9o ~~ d9o
+d9o ~ 1
+
+d10o =~ 1*open10
+d10o ~~ d10o
+d10o ~ 1
+
+t7o ~~ d8o + d9o + d10o
+d8o ~~ d9o + d10o
+d9o ~~ d10o'
+
+fitO_t <- sem(model, missing="ML", data = y_t_all)
+fitO_t_est<-parameterEstimates(fitO_t)
+fitO_t_est<-fitO_t_est[c(83,84,88,89,92,93,95,96),]
+fitO_t_cfi<-fitMeasures(fitO_t, "cfi")
+fitO_t_cfi
+summary(fitO_t)
+```
+### Summary: Teacher-Report
+```{r}
+summary_t<-rbind(fitE_t_est,fitA_t_est,fitC_t_est,fitN_t_est,fitO_t_est)
+summary_t
+```
+
+
+###Correlated Change: (Steyer)
+####Extraversion
+```{r}
+model <-
+'#define latent variables
+extra7s =~ 1*PRS7_01 + 1*PRS7_04
+extra8s =~ 1*PRS8_01 + 1*PRS8_04
+extra9s =~ 1*PRS9_01 + 1*PRS9_04
+extra10s =~ 1*PRS10_01 + 1*PRS10_04
+
+extra7t =~ 1*TPER7_01 + cat2*TPER7_04 + cat3*TPER7_15 + cat4*TPER7_19R + cat5*TPER7_22R
+extra8t =~ 1*TPER8_01 + cat2*TPER8_04 + cat3*TPER8_15 + cat4*TPER8_19R + cat5*TPER8_22R
+extra9t =~ 1*TPER9_01 + cat2*TPER9_04 + cat3*TPER9_15 + cat4*TPER9_19R + cat5*TPER9_22R
+extra10t =~ 1*TPER10_01 + cat2*TPER10_04 + cat3*TPER10_15 + cat4*TPER10_19R + cat5*TPER10_22R
+
+PRS7_01 ~ 0*1
+PRS7_04 ~ (nu1)*1
+PRS8_01 ~ 0*1
+PRS8_04 ~ (nu1)*1
+PRS9_01 ~ 0*1
+PRS9_04 ~ (nu1)*1
+PRS10_01 ~ 0*1
+PRS10_04 ~ (nu1)*1
+
+TPER7_01 ~ 0*1
+TPER7_04 ~ (nu1)*1
+TPER7_15 ~ (nu2)*1
+TPER7_19R ~ (nu3)*1
+TPER7_22R ~ (nu4)*1
+
+TPER8_01 ~ 0*1
+TPER8_04 ~ (nu1)*1
+TPER8_15 ~ (nu2)*1
+TPER8_19R ~ (nu3)*1
+TPER8_22R ~ (nu4)*1
+
+TPER9_01 ~ 0*1
+TPER9_04 ~ (nu1)*1
+TPER9_15 ~ (nu2)*1
+TPER9_19R ~ (nu3)*1
+TPER9_22R ~ (nu4)*1
+
+TPER10_01 ~ 0*1
+TPER10_04 ~ (nu1)*1
+TPER10_15 ~ (nu2)*1
+TPER10_19R ~ (nu3)*1
+TPER10_22R ~ (nu4)*1
+
+PRS7_01 ~~ PRS8_01 + PRS9_01 + PRS10_01
+PRS8_01 ~~ PRS9_01 + PRS10_01
+PRS9_01 ~~ PRS10_01
+
+PRS7_04 ~~ PRS8_04 + PRS9_04 + PRS10_04
+PRS8_04 ~~ PRS9_04 + PRS10_04
+PRS9_04 ~~ PRS10_04
+
+TPER7_01 ~~ TPER8_01 + TPER9_01 + TPER10_01
+TPER8_01 ~~ TPER9_01 + TPER10_01
+TPER9_01 ~~ TPER10_01
+
+TPER7_04 ~~ TPER8_04 + TPER9_04 + TPER10_04
+TPER8_04 ~~ TPER9_04 + TPER10_04
+TPER9_04 ~~ TPER10_04
+
+TPER7_15 ~~ TPER8_15 + TPER9_15 + TPER10_15
+TPER8_15 ~~ TPER9_15 + TPER10_15
+TPER9_15 ~~ TPER10_15
+
+TPER7_19R ~~ TPER8_19R + TPER9_19R + TPER10_19R
+TPER8_19R ~~ TPER9_19R + TPER10_19R
+TPER9_19R ~~ TPER10_19R
+
+TPER7_22R ~~ TPER8_22R + TPER9_22R + TPER10_22R
+TPER8_22R ~~ TPER9_22R + TPER10_22R
+TPER9_22R ~~ TPER10_22R
+
+extra7s ~ 0*1
+extra8s ~ 0*1
+extra9s ~ 0*1
+extra10s ~ 0*1
+
+extra7t ~ 0*1
+extra8t ~ 0*1
+extra9t ~ 0*1
+extra10t ~ 0*1
+
+extra7s ~~ 0*extra7s
+extra8s ~~ 0*extra8s
+extra9s ~~ 0*extra9s
+extra10s ~~ 0*extra10s
+
+extra7t ~~ 0*extra7t
+extra8t ~~ 0*extra8t
+extra9t ~~ 0*extra9t
+extra10t ~~ 0*extra10t
+
+t7e_s =~ 1*extra7s + 1*extra8s + 1*extra9s + 1*extra10s
+t7e_s ~ 1
+t7e_s ~~ t7e_s
+
+d8e_s =~ 1*extra8s + 1*extra9s + 1*extra10s
+d8e_s ~~ d8e_s
+d8e_s ~ 1
+
+d9e_s =~ 1*extra9s + 1*extra10s
+d9e_s ~~ d9e_s
+d9e_s ~ 1
+
+d10e_s =~ 1*extra10s
+d10e_s ~~ d10e_s
+d10e_s ~ 1
+
+t7e_s ~~ d8e_s + d9e_s + d10e_s
+d8e_s ~~ d9e_s + d10e_s
+d9e_s ~~ d10e_s
+
+t7e_t =~ 1*extra7t + 1*extra8t + 1*extra9t + 1*extra10t
+t7e_t ~ 1
+t7e_t ~~ t7e_t
+
+d8e_t =~ 1*extra8t + 1*extra9t + 1*extra10t
+d8e_t ~~ d8e_t
+d8e_t ~ 1
+
+d9e_t =~ 1*extra9t + 1*extra10t
+d9e_t ~~ d9e_t
+d9e_t ~ 1
+
+d10e_t =~ 1*extra10t
+d10e_t ~~ d10e_t
+d10e_t ~ 1
+
+t7e_t ~~ d8e_t + d9e_t + d10e_t
+d8e_t ~~ d9e_t + d10e_t
+d9e_t ~~ d10e_t
+
+d8e_s ~~ 0*d9e_t + 0*d10e_t
+d9e_s ~~ 0*d10e_t'
+
+fitE_cor_diff <- sem(model, missing="ML", data = y_t_all)
+fitE_cor_diff_est<-parameterEstimates(fitE_cor_diff)
+fitE_cor_diff_est<-fitE_cor_diff_est[c(194,199,202,206),]
+fitE_cor_cfi<-fitMeasures(fitE_cor_diff, "cfi")
+fitE_cor_cfi
+summary(fitE_cor_diff)
+semPaths(fitE_cor_diff)
+```
+
+```{r}
+model<-
+'agree7s =~ 1*PRS7_05 + 1*PRS7_07
+agree8s =~ 1*PRS8_05 + 1*PRS8_07
+agree9s =~ 1*PRS9_05 + 1*PRS9_07
+agree10s =~ 1*PRS10_05 + 1*PRS10_07
+
+agree7t =~ 1*TPER7_05 + cat2*TPER7_07 + cat3*TPER7_11 + cat4*TPER7_20R + cat5*TPER7_23R
+agree8t =~ 1*TPER8_05 + cat2*TPER8_07 + cat3*TPER8_11 + cat4*TPER8_20R + cat5*TPER8_23R
+agree9t =~ 1*TPER9_05 + cat2*TPER9_07 + cat3*TPER9_11 + cat4*TPER9_20R + cat5*TPER9_23R
+agree10t =~ 1*TPER10_05 + cat2*TPER10_07 + cat3*TPER10_11 + cat4*TPER10_20R + cat5*TPER10_23R
+
+PRS7_05 ~ 0*1
+PRS7_07 ~ (nu1)*1
+PRS8_05 ~ 0*1
+PRS8_07 ~ (nu1)*1
+PRS9_05 ~ 0*1
+PRS9_07 ~ (nu1)*1
+PRS10_05 ~ 0*1
+PRS10_07 ~ (nu1)*1
+
+TPER7_05 ~ 0*1
+TPER7_07 ~ (nu1)*1
+TPER7_11 ~ (nu2)*1
+TPER7_20R ~ (nu3)*1
+TPER7_23R ~ (nu4)*1
+
+TPER8_05 ~ 0*1
+TPER8_07 ~ (nu1)*1
+TPER8_11 ~ (nu2)*1
+TPER8_20R ~ (nu3)*1
+TPER8_23R ~ (nu4)*1
+
+TPER9_05 ~ 0*1
+TPER9_07 ~ (nu1)*1
+TPER9_11 ~ (nu2)*1
+TPER9_20R ~ (nu3)*1
+TPER9_23R ~ (nu4)*1
+
+TPER10_05 ~ 0*1
+TPER10_07 ~ (nu1)*1
+TPER10_11 ~ (nu2)*1
+TPER10_20R ~ (nu3)*1
+TPER10_23R ~ (nu4)*1
+
+PRS7_05 ~~ PRS8_05 + PRS9_05 + PRS10_05
+PRS8_05 ~~ PRS9_05 + PRS10_05
+PRS9_05 ~~ PRS10_05
+
+PRS7_07 ~~ PRS8_07 + PRS9_07 + PRS10_07
+PRS8_07 ~~ PRS9_07 + PRS10_07
+PRS9_07 ~~ PRS10_07
+
+TPER7_05 ~~ TPER8_05 + TPER9_05 + TPER10_05
+TPER8_05 ~~ TPER9_05 + TPER10_05
+TPER9_05 ~~ TPER10_05
+
+TPER7_07 ~~ TPER8_07 + TPER9_07 + TPER10_07
+TPER8_07 ~~ TPER9_07 + TPER10_07
+TPER9_07 ~~ TPER10_07
+
+TPER7_11 ~~ TPER8_11 + TPER9_11 + TPER10_11
+TPER8_11 ~~ TPER9_11 + TPER10_11
+TPER9_11 ~~ TPER10_11
+
+TPER7_20R ~~ TPER8_20R + TPER9_20R + TPER10_20R
+TPER8_20R ~~ TPER9_20R + TPER10_20R
+TPER9_20R ~~ TPER10_20R
+
+TPER7_23R ~~ TPER8_23R + TPER9_23R + TPER10_23R
+TPER8_23R ~~ TPER9_23R + TPER10_23R
+TPER9_23R ~~ TPER10_23R
+
+agree7s ~ 0*1
+agree8s ~ 0*1
+agree9s ~ 0*1
+agree10s ~ 0*1
+
+agree7s ~~ 0*agree7s
+agree8s ~~ 0*agree8s
+agree9s ~~ 0*agree9s
+agree10s ~~ 0*agree10s
+
+agree7t ~ 0*1
+agree8t ~ 0*1
+agree9t ~ 0*1
+agree10t ~ 0*1
+
+agree7t ~~ 0*agree7t
+agree8t ~~ 0*agree8t
+agree9t ~~ 0*agree9t
+agree10t ~~ 0*agree10t
+
+t7a_s =~ 1*agree7s + 1*agree8s + 1*agree9s + 1*agree10s
+t7a_s ~ 1
+t7a_s ~~ t7a_s
+
+d8a_s =~ 1*agree8s + 1*agree9s + 1*agree10s
+d8a_s ~~ d8a_s
+d8a_s ~ 1
+
+d9a_s =~ 1*agree9s + 1*agree10s
+d9a_s ~~ d9a_s
+d9a_s ~ 1
+
+d10a_s =~ 1*agree10s
+d10a_s ~~ d10a_s
+d10a_s ~ 1
+
+t7a_s ~~ d8a_s + d9a_s + d10a_s
+d8a_s ~~ d9a_s + d10a_s
+d9a_s ~~ d10a_s
+
+t7a_t =~ 1*agree7t + 1*agree8t + 1*agree9t + 1*agree10t
+t7a_t ~ 1
+t7a_t ~~ t7a_t
+
+d8a_t =~ 1*agree8t + 1*agree9t + 1*agree10t
+d8a_t ~~ d8a_t
+d8a_t ~ 1
+
+d9a_t =~ 1*agree9t + 1*agree10t
+d9a_t ~~ d9a_t
+d9a_t ~ 1
+
+d10a_t =~ 1*agree10t
+d10a_t ~~ d10a_t
+d10a_t ~ 1
+
+t7a_t ~~ d8a_t + d9a_t + d10a_t
+d8a_t ~~ d9a_t + d10a_t
+d9a_t ~~ d10a_t
+
+d8a_s ~~ 0*d9a_t + 0*d10a_t
+d9a_s ~~ 0*d10a_t'
+fitA_cor_diff <- sem(model, missing="ML", data = y_t_all)
+fitA_cor_diff_est<-parameterEstimates(fitA_cor_diff)
+fitA_cor_diff_est<-fitA_cor_diff_est[c(194,199,202,206),]
+fitA_cor_cfi<-fitMeasures(fitA_cor_diff, "cfi")
+fitA_cor_cfi
+summary(fitA_cor_diff)
+semPaths(fitA_cor_diff)
+```
+
+```{r}
+model <-
+'consc7s =~ 1*PRS7_02 + 1*PRS7_06
+consc8s =~ 1*PRS8_02 + 1*PRS8_06
+consc9s =~ 1*PRS9_02 + 1*PRS9_06
+consc10s =~ 1*PRS10_02 + 1*PRS10_06
+
+consc7t =~ 1*TPER7_02 + cat2*TPER7_06 + cat3*TPER7_16 + cat4*TPER7_21R + cat5*TPER7_24R
+consc8t =~ 1*TPER8_02 + cat2*TPER8_06 + cat3*TPER8_16 + cat4*TPER8_21R + cat5*TPER8_24R
+consc9t =~ 1*TPER9_02 + cat2*TPER9_06 + cat3*TPER9_16 + cat4*TPER9_21R + cat5*TPER9_24R
+consc10t =~ 1*TPER10_02 + cat2*TPER10_06 + cat3*TPER10_16 + cat4*TPER10_21R + cat5*TPER10_24R
+
+PRS7_02 ~ 0*1
+PRS7_06 ~ (nu1)*1
+PRS8_02~ 0*1
+PRS8_06 ~ (nu1)*1
+PRS9_02~ 0*1
+PRS9_06 ~ (nu1)*1
+PRS10_02 ~ 0*1
+PRS10_06 ~ (nu1)*1
+
+TPER7_02 ~ 0*1
+TPER7_06 ~ (nu1)*1
+TPER7_16 ~ (nu2)*1
+TPER7_21R ~ (nu3)*1
+TPER7_24R ~ (nu4)*1
+
+TPER8_02 ~ 0*1
+TPER8_06 ~ (nu1)*1
+TPER8_16 ~ (nu2)*1
+TPER8_21R ~ (nu3)*1
+TPER8_24R ~ (nu4)*1
+
+TPER9_02 ~ 0*1
+TPER9_06 ~ (nu1)*1
+TPER9_16 ~ (nu2)*1
+TPER9_21R ~ (nu3)*1
+TPER9_24R ~ (nu4)*1
+
+TPER10_02 ~ 0*1
+TPER10_06 ~ (nu1)*1
+TPER10_16 ~ (nu2)*1
+TPER10_21R ~ (nu3)*1
+TPER10_24R ~ (nu4)*1
+
+PRS7_02 ~~ PRS8_02 + PRS9_02 + PRS10_02
+PRS8_02 ~~ PRS9_02 + PRS10_02
+PRS9_02 ~~ PRS10_02
+
+PRS7_06 ~~ PRS8_06 + PRS9_06 + PRS10_06
+PRS8_06 ~~ PRS9_06 + PRS10_06
+PRS9_06 ~~ PRS10_06
+
+TPER7_02 ~~ TPER8_02 + TPER9_02 + TPER10_02
+TPER8_02 ~~ TPER9_02 + TPER10_02
+TPER9_02 ~~ TPER10_02
+
+TPER7_06 ~~ TPER8_06 + TPER9_06 + TPER10_06
+TPER8_06 ~~ TPER9_06 + TPER10_06
+TPER9_06 ~~ TPER10_06
+
+TPER7_16 ~~ TPER8_16 + TPER9_16 + TPER10_16
+TPER8_16 ~~ TPER9_16 + TPER10_16
+TPER9_16 ~~ TPER10_16
+
+TPER7_21R ~~ TPER8_21R + TPER9_21R + TPER10_21R
+TPER8_21R ~~ TPER9_21R + TPER10_21R
+TPER9_21R ~~ TPER10_21R
+
+TPER7_24R ~~ TPER8_24R + TPER9_24R + TPER10_24R
+TPER8_24R ~~ TPER9_24R + TPER10_24R
+TPER9_24R ~~ TPER10_24R
+
+consc7s ~ 0*1
+consc8s ~ 0*1
+consc9s ~ 0*1
+consc10s ~ 0*1
+
+consc7s ~~ 0*consc7s
+consc8s ~~ 0*consc8s
+consc9s ~~ 0*consc9s
+consc10s ~~ 0*consc10s
+
+consc7t ~ 0*1
+consc8t ~ 0*1
+consc9t ~ 0*1
+consc10t ~ 0*1
+
+consc7t ~~ 0*consc7t
+consc8t ~~ 0*consc8t
+consc9t ~~ 0*consc9t
+consc10t ~~ 0*consc10t
+
+t7c_s =~ 1*consc7s + 1*consc8s + 1*consc9s + 1*consc10s
+t7c_s ~ 1
+t7c_s ~~ t7c_s
+
+d8c_s =~ 1*consc8s + 1*consc9s + 1*consc10s
+d8c_s ~~ d8c_s
+d8c_s ~ 1
+
+d9c_s =~ 1*consc9s + 1*consc10s
+d9c_s ~~ d9c_s
+d9c_s ~ 1
+
+d10c_s =~ 1*consc10s
+d10c_s ~~ d10c_s
+d10c_s ~ 1
+
+t7c_s ~~ d8c_s + d9c_s + d10c_s
+d8c_s ~~ d9c_s + d10c_s
+d9c_s ~~ d10c_s
+
+t7c_t =~ 1*consc7t + 1*consc8t + 1*consc9t + 1*consc10t
+t7c_t ~ 1
+t7c_t ~~ t7c_t
+
+d8c_t =~ 1*consc8t + 1*consc9t + 1*consc10t
+d8c_t ~~ d8c_t
+d8c_t ~ 1
+
+d9c_t =~ 1*consc9t + 1*consc10t
+d9c_t ~~ d9c_t
+d9c_t ~ 1
+
+d10c_t =~ 1*consc10t
+d10c_t ~~ d10c_t
+d10c_t ~ 1
+
+t7c_t ~~ d8c_t + d9c_t + d10c_t
+d8c_t ~~ d9c_t + d10c_t
+d9c_t ~~ d10c_t
+
+d8c_s ~~ 0*d9c_t + 0*d10c_t
+d9c_s ~~ 0*d10c_t'
+fitC_cor_diff <- sem(model, missing="ML", data = y_t_all)
+fitC_cor_diff_est<-parameterEstimates(fitC_cor_diff)
+fitC_cor_diff_est<-fitC_cor_diff_est[c(194,199,202,206),]
+fitC_cor_cfi<-fitMeasures(fitC_cor_diff, "cfi")
+fitC_cor_cfi
+summary(fitC_cor_diff)
+semPaths(fitC_cor_diff)
+```
+
+```{r}
+model <-
+'neuro7s =~ 1*PRS7_08 + 1*PRS7_10
+neuro8s =~ 1*PRS8_08 + 1*PRS8_10
+neuro9s =~ 1*PRS9_08 + 1*PRS9_10
+neuro10s =~ 1*PRS10_08 + 1*PRS10_10
+
+neuro7t =~ 1*TPER7_08 + cat2*TPER7_10 + cat3*TPER7_17R + cat4*TPER7_13R + cat5*TPER7_12R
+neuro8t =~ 1*TPER8_08 + cat2*TPER8_10 + cat3*TPER8_17R + cat4*TPER8_13R + cat5*TPER8_12R
+neuro9t =~ 1*TPER9_08 + cat2*TPER9_10 + cat3*TPER9_17R + cat4*TPER9_13R + cat5*TPER9_12R
+neuro10t =~ 1*TPER10_08 + cat2*TPER10_10 + cat3*TPER10_17R + cat4*TPER10_13R + cat5*TPER10_12R
+
+PRS7_08 ~ 0*1
+PRS7_10 ~ (nu1)*1
+PRS8_08 ~ 0*1
+PRS8_10 ~ (nu1)*1
+PRS9_08 ~ 0*1
+PRS9_10 ~ (nu1)*1
+PRS10_08 ~ 0*1
+PRS10_10 ~ (nu1)*1
+
+TPER7_08 ~ 0*1
+TPER7_10 ~ (nu1)*1
+TPER7_17R ~ (nu2)*1
+TPER7_12R ~ (nu3)*1
+TPER7_13R ~ (nu4)*1
+
+TPER8_08 ~ 0*1
+TPER8_10 ~ (nu1)*1
+TPER8_17R ~ (nu2)*1
+TPER8_12R ~ (nu3)*1
+TPER8_13R ~ (nu4)*1
+
+TPER9_08 ~ 0*1
+TPER9_10 ~ (nu1)*1
+TPER9_17R ~ (nu2)*1
+TPER9_12R ~ (nu3)*1
+TPER9_13R ~ (nu4)*1
+
+TPER10_08 ~ 0*1
+TPER10_10 ~ (nu1)*1
+TPER10_17R ~ (nu2)*1
+TPER10_12R ~ (nu3)*1
+TPER10_13R ~ (nu4)*1
+
+PRS7_08 ~~ PRS8_08 + PRS9_08 + PRS10_08
+PRS8_08 ~~ PRS9_08 + PRS10_08
+PRS9_08 ~~ PRS10_08
+
+PRS7_10 ~~ PRS8_10 + PRS9_10 + PRS10_10
+PRS8_10 ~~ PRS9_10 + PRS10_10
+PRS9_10 ~~ PRS10_10
+
+TPER7_08 ~~ TPER8_08 + TPER9_08 + TPER10_08
+TPER8_08 ~~ TPER9_08 + TPER10_08
+TPER9_08 ~~ TPER10_08
+
+TPER7_10 ~~ TPER8_10 + TPER9_10 + TPER10_10
+TPER8_10 ~~ TPER9_10 + TPER10_10
+TPER9_10 ~~ TPER10_10
+
+TPER7_17R ~~ TPER8_17R + TPER9_17R + TPER10_17R
+TPER8_17R ~~ TPER9_17R + TPER10_17R
+TPER9_17R ~~ TPER10_17R
+
+TPER7_13R ~~ TPER8_13R + TPER9_13R + TPER10_13R
+TPER8_13R ~~ TPER9_13R + TPER10_13R
+TPER9_13R ~~ TPER10_13R
+
+TPER7_12R ~~ TPER8_12R + TPER9_12R + TPER10_12R
+TPER8_12R ~~ TPER9_12R + TPER10_12R
+TPER9_12R ~~ TPER10_12R
+
+neuro7s ~ 0*1
+neuro8s ~ 0*1
+neuro9s ~ 0*1
+neuro10s ~ 0*1
+
+neuro7s ~~ 0*neuro7s
+neuro8s ~~ 0*neuro8s
+neuro9s ~~ 0*neuro9s
+neuro10s ~~ 0*neuro10s
+
+neuro7t ~ 0*1
+neuro8t ~ 0*1
+neuro9t ~ 0*1
+neuro10t ~ 0*1
+
+neuro7t ~~ 0*neuro7t
+neuro8t ~~ 0*neuro8t
+neuro9t ~~ 0*neuro9t
+neuro10t ~~ 0*neuro10t
+
+t7n_s =~ 1*neuro7s + 1*neuro8s + 1*neuro9s + 1*neuro10s
+t7n_s ~ 1
+t7n_s ~~ t7n_s
+
+d8n_s =~ 1*neuro8s + 1*neuro9s + 1*neuro10s
+d8n_s ~~ d8n_s
+d8n_s ~ 1
+
+d9n_s =~ 1*neuro9s + 1*neuro10s
+d9n_s ~~ d9n_s
+d9n_s ~ 1
+
+d10n_s =~ 1*neuro10s
+d10n_s ~~ d10n_s
+d10n_s ~ 1
+
+t7n_s ~~ d8n_s + d9n_s + d10n_s
+d8n_s ~~ d9n_s + d10n_s
+d9n_s ~~ d10n_s
+
+t7n_t =~ 1*neuro7t + 1*neuro8t + 1*neuro9t + 1*neuro10t
+t7n_t ~ 1
+t7n_t ~~ t7n_t
+
+d8n_t =~ 1*neuro8t + 1*neuro9t + 1*neuro10t
+d8n_t ~~ d8n_t
+d8n_t ~ 1
+
+d9n_t =~ 1*neuro9t + 1*neuro10t
+d9n_t ~~ d9n_t
+d9n_t ~ 1
+
+d10n_t =~ 1*neuro10t
+d10n_t ~~ d10n_t
+d10n_t ~ 1
+
+t7n_t ~~ d8n_t + d9n_t + d10n_t
+d8n_t ~~ d9n_t + d10n_t
+d9n_t ~~ d10n_t
+
+d8n_s ~~ 0*d9n_t + 0*d10n_t
+d9n_s ~~ 0*d10n_t'
+fitN_cor_diff <- sem(model, missing="ML", data = y_t_all)
+fitN_cor_diff_est<-parameterEstimates(fitN_cor_diff)
+fitN_cor_diff_est<-fitN_cor_diff_est[c(194,199,202,206),]
+fitN_cor_cfi<-fitMeasures(fitN_cor_diff, "cfi")
+fitN_cor_cfi
+summary(fitN_cor_diff)
+semPaths(fitN_cor_diff)
+```
+
+```{r}
+model <-
+'open7s =~ 1*PRS7_03 + 1*PRS7_09
+open8s =~ 1*PRS8_03 + 1*PRS8_09
+open9s =~ 1*PRS9_03 + 1*PRS9_09
+open10s =~ 1*PRS10_03 + 1*PRS10_09
+
+open7t =~ 1*TPER7_03 + cat2*TPER7_09 + cat3*TPER7_14 + cat4*TPER7_18R + cat5*TPER7_25R
+open8t =~ 1*TPER8_03 + cat2*TPER8_09 + cat3*TPER8_14 + cat4*TPER8_18R + cat5*TPER8_25R
+open9t =~ 1*TPER9_03 + cat2*TPER9_09 + cat3*TPER9_14 + cat4*TPER9_18R + cat5*TPER9_25R
+open10t =~ 1*TPER10_03 + cat2*TPER10_09 + cat3*TPER10_14 + cat4*TPER10_18R + cat5*TPER10_25R
+
+PRS7_03 ~ 0*1
+PRS7_09 ~ (nu1)*1
+PRS8_03 ~ 0*1
+PRS8_09 ~ (nu1)*1
+PRS9_03 ~ 0*1
+PRS9_09 ~ (nu1)*1
+PRS10_03 ~ 0*1
+PRS10_09 ~ (nu1)*1
+
+TPER7_03 ~ 0*1
+TPER7_09 ~ (nu1)*1
+TPER7_14 ~ (nu2)*1
+TPER7_18R ~ (nu3)*1
+TPER7_25R ~ (nu4)*1
+
+TPER8_03 ~ 0*1
+TPER8_09 ~ (nu1)*1
+TPER8_14 ~ (nu2)*1
+TPER8_18R ~ (nu3)*1
+TPER8_25R ~ (nu4)*1
+
+TPER9_03 ~ 0*1
+TPER9_09 ~ (nu1)*1
+TPER9_14 ~ (nu2)*1
+TPER9_18R ~ (nu3)*1
+TPER9_25R ~ (nu4)*1
+
+TPER10_03 ~ 0*1
+TPER10_09 ~ (nu1)*1
+TPER10_14 ~ (nu2)*1
+TPER10_18R ~ (nu3)*1
+TPER10_25R ~ (nu4)*1
+
+PRS7_03 ~~ PRS8_03 + PRS9_03 + PRS10_03
+PRS8_03 ~~ PRS9_03 + PRS10_03
+PRS9_03 ~~ PRS10_03
+
+PRS7_09 ~~ PRS8_09 + PRS9_09 + PRS10_09
+PRS8_09 ~~ PRS9_09 + PRS10_09
+PRS9_09 ~~ PRS10_09
+
+TPER7_03 ~~ TPER8_03 + TPER9_03 + TPER10_03
+TPER8_03 ~~ TPER9_03 + TPER10_03
+TPER9_03 ~~ TPER10_03
+
+TPER7_09 ~~ TPER8_09 + TPER9_09 + TPER10_09
+TPER8_09 ~~ TPER9_09 + TPER10_09
+TPER9_09 ~~ TPER10_09
+
+TPER7_14 ~~ TPER8_14 + TPER9_14 + TPER10_14
+TPER8_14 ~~ TPER9_14 + TPER10_14
+TPER9_14 ~~ TPER10_14
+
+TPER7_18R ~~ TPER8_18R + TPER9_18R + TPER10_18R
+TPER8_18R ~~ TPER9_18R + TPER10_18R
+TPER9_18R ~~ TPER10_18R
+
+TPER7_25R ~~ TPER8_25R + TPER9_25R + TPER10_25R
+TPER8_25R ~~ TPER9_25R + TPER10_25R
+TPER9_25R ~~ TPER10_25R
+
+open7s ~ 0*1
+open8s ~ 0*1
+open9s ~ 0*1
+open10s ~ 0*1
+
+open7s ~~ 0*open7s
+open8s ~~ 0*open8s
+open9s ~~ 0*open9s
+open10s ~~ 0*open10s
+
+open7t ~ 0*1
+open8t ~ 0*1
+open9t ~ 0*1
+open10t ~ 0*1
+
+open7t ~~ 0*open7t
+open8t ~~ 0*open8t
+open9t ~~ 0*open9t
+open10t ~~ 0*open10t
+
+t7o_s =~ 1*open7s + 1*open8s + 1*open9s + 1*open10s
+t7o_s ~ 1
+t7o_s ~~ t7o_s
+
+d8o_s =~ 1*open8s + 1*open9s + 1*open10s
+d8o_s ~~ d8o_s
+d8o_s ~ 1
+
+d9o_s =~ 1*open9s + 1*open10s
+d9o_s ~~ d9o_s
+d9o_s ~ 1
+
+d10o_s =~ 1*open10s
+d10o_s ~~ d10o_s
+d10o_s ~ 1
+
+t7o_s ~~ d8o_s + d9o_s + d10o_s
+d8o_s ~~ d9o_s + d10o_s
+d9o_s ~~ d10o_s
+
+t7o_t =~ 1*open7t + 1*open8t + 1*open9t + 1*open10t
+t7o_t ~ 1
+t7o_t ~~ t7o_t
+
+d8o_t =~ 1*open8t + 1*open9t + 1*open10t
+d8o_t ~~ d8o_t
+d8o_t ~ 1
+
+d9o_t =~ 1*open9t + 1*open10t
+d9o_t ~~ d9o_t
+d9o_t ~ 1
+
+d10o_t =~ 1*open10t
+d10o_t ~~ d10o_t
+d10o_t ~ 1
+
+t7o_t ~~ d8o_t + d9o_t + d10o_t
+d8o_t ~~ d9o_t + d10o_t
+d9o_t ~~ d10o_t
+
+d8o_s ~~ 0*d9o_t + 0*d10o_t
+d9o_s ~~ 0*d10o_t'
+
+fitO_cor_diff <- sem(model, missing="ML", data = y_t_all)
+fitO_cor_diff_est<-parameterEstimates(fitO_cor_diff)
+fitO_cor_diff_est<-fitO_cor_diff_est[c(194,199,202,206),]
+fitO_cor_cfi<-fitMeasures(fitO_cor_diff, "cfi")
+fitO_cor_cfi
+summary(fitO_cor_diff)
+semPaths(fitO_cor_diff)
+```
+
+## Summary: Correlated change
+
+```{r}
+summary_t<-rbind(fitE_cor_diff_est,fitA_cor_diff_est,fitC_cor_diff_est,fitN_cor_diff_est,fitO_cor_diff_est)
+summary_t
+```
+
