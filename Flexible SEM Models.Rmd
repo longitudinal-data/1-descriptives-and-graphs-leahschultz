@@ -20,7 +20,7 @@ knitr::opts_chunk$set(message=F,warning=F)
 library(lavaan)
 library(semPlot)
 
-y_t_all <- read.csv("~/Desktop/my_models.csv")
+y_t_all <- read.csv("~/Desktop/oysup_teacher_self.csv")
 #EXTRAVERSION
 
 model <- '
