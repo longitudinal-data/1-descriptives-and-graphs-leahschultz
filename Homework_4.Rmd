@@ -22,28 +22,26 @@ gender <- y_t_all %>%
 newdata <- merge(purpose, gender)
 ```
 
-1) Fit a measurement model to your constructs at one time point. Try out the different types of scaling discussed in class. What changes? What stays the same?
+## 1) Fit a measurement model to your constructs at one time point. Try out the different types of scaling discussed in class. What changes? What stays the same?
 
-2) What do the fit statistics say about your latent variable? Good/bad? Is your latent variable just identified/saturated, under-identified, or over-identified?
+## 2) What do the fit statistics say about your latent variable? Good/bad? Is your latent variable just identified/saturated, under-identified, or over-identified?
 
-Fit a longitudinal CFA model where you a) first correlate your latent factors across time and then b) a second model that predicts later times by a prevous time (i.e., auto-regressive; t1 -> t2 -> t3). What are your conclusions? How does one differ from the other?
+## 3) Fit a longitudinal CFA model where you a) first correlate your latent factors across time and then b) a second model that predicts later times by a prevous time (i.e., auto-regressive; t1 -> t2 -> t3). What are your conclusions? How does one differ from the other?
 
-3) Fit a longitudinal growth model in SEM and in HLM. Compare and contrast the differences.
+## 4) Fit a longitudinal growth model in SEM and in HLM. Compare and contrast the differences.
 
-4) Constrain the residual variances to be equal. Does this change the fit of your model?
+## 5) Constrain the residual variances to be equal. Does this change the fit of your model?
 
-5) Contrain your slope to be fixed, not random. How does this change your model?
+## 6) Contrain your slope to be fixed, not random. How does this change your model?
 
-6) Change the time metric in your SEM growth model. How does that change your estimates? Does it change your fit statistics?
+## 7) Change the time metric in your SEM growth model. How does that change your estimates? Does it change your fit statistics?
 
-7) Try a different type of estimation (see lavaan tutorial for details). How does that change your model?
+## 8) Try a different type of estimation (see lavaan tutorial for details). How does that change your model?
 
-8) Provide semplots for each of the models.
+## 9) Provide semplots for each of the models.
 
-—-NEW QUESTIONS—-
+## 10) Test measurement invariance across time for your construct. Can you run growth models? If there is evidence of non-invariance, what seems to be the problem?
 
-9) Test measurement invariance across time for your construct. Can you run growth models? If there is evidence of non-invariance, what seems to be the problem?
+## 11) Fit a second order growth model. Compare and contrast the estimates with the normal latent growth model.
 
-10) Fit a second order growth model. Compare and contrast the estimates with the normal latent growth model.
-
-11) Fit a series of multiple group models. Constrain some parameters and compare the fit.
+## 12) Fit a series of multiple group models. Constrain some parameters and compare the fit.

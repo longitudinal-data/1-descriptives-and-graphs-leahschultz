@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_teacher_self.csv")
+purpose <- read.csv("~/1-descriptives-and-graphs-leahschultz/oysup_teacher_self.csv")
 ```
 
 ## 1. Move your data into a long format and a wide format. Did you have any specific challenges that you encountered? If so, discuss them.
