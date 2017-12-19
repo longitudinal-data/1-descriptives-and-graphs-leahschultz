@@ -1,5 +1,5 @@
 ---
-title: "Homework 5 (SEM)"
+title: "Homework 4 (SEM)"
 author: "Leah Schultz"
 date: "11/2/2017"
 output: pdf_document
@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r warning = FALSE, message = FALSE}
 library(lme4)
 library(ggplot2)
-purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_self.csv")
+purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_teacher_self.csv")
 y_t_all <- read.csv("~/Box Sync/OYSUP Data/OYSUP Data (csv) and Codebooks/youth_best_teacher_Oct-9.csv")
 require(MASS)
 require(dplyr)
@@ -21,22 +21,28 @@ gender <- y_t_all %>%
 newdata <- merge(purpose, gender)
 ```
 
-## Fit a measurement model to your constructs at one time point. Try out the different types of scaling discussed in class. What changes what stays the same?
+1) Fit a measurement model to your constructs at one time point. Try out the different types of scaling discussed in class. What changes? What stays the same?
 
+2) What do the fit statistics say about your latent variable? Good/bad? Is your latent variable just identified/saturated, under-identified, or over-identified?
 
+Fit a longitudinal CFA model where you a) first correlate your latent factors across time and then b) a second model that predicts later times by a prevous time (i.e., auto-regressive; t1 -> t2 -> t3). What are your conclusions? How does one differ from the other?
 
+3) Fit a longitudinal growth model in SEM and in HLM. Compare and contrast the differences.
 
-What do the fit statistics say about your latent variable? Good/bad? Is your latent variable Just identified/saturdated, under identified or over identified?
-Fit a longitudinal CFA model where you a) first correlate your latent factors across time and then b) a second model that predicts later times by a prevous time (ie auto regressive; t1 -> t2 -> t3). What are your conclusions? How does one differ from the other?
+4) Constrain the residual variances to be equal. Does this change the fit of your model?
 
-Fit a longitudinal growth model in SEM and in HLM. Compare and contrast the differences.
+5) Contrain your slope to be fixed, not random. How does this change your model?
 
-Constrain the residual variances to be equal. Does this change the fit of your model?
+6) Change the time metric in your SEM growth model. How does that change your estimates? Does it change your fit statistics?
 
-Contrain your slope to be fixed, not random. How does this change your model?
+7) Try a different type of estimation (see lavaan tutorial for details). How does that change your model?
 
-Change the time metric in your SEM growth model. How does that change your estimates? Does it change your fit statistics?
+8) Provide semplots for each of the models.
 
-Try a different type of estimation (see lavaan tutorial for details). How does that change your model?
+—-NEW QUESTIONS—-
 
-Provide semplots for each of the models
+9) Test measurement invariance across time for your construct. Can you run growth models? If there is evidence of non-invariance, what seems to be the problem?
+
+10) Fit a second order growth model. Compare and contrast the estimates with the normal latent growth model.
+
+11) Fit a series of multiple group models. Constrain some parameters and compare the fit.

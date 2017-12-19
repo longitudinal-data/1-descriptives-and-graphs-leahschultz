@@ -17,7 +17,7 @@ library(lme4)
 library(ggplot2)
 library(broom)
 library(merTools)
-purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_self.csv")
+purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_teacher_self.csv")
 ```
 
 First, restructuring data:

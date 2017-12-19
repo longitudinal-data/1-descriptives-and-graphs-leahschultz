@@ -15,7 +15,7 @@ library(dplyr)
 library(lme4)
 library(ggplot2)
 library(merTools)
-purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_self.csv")
+purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_teacher_self.csv")
 y_t_all <- read.csv("~/Box Sync/OYSUP Data/OYSUP Data (csv) and Codebooks/youth_best_teacher_Oct-9.csv")
 gender <- y_t_all %>%
   select(SEX3)
