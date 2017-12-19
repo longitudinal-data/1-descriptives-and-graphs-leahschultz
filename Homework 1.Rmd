@@ -14,7 +14,13 @@ knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-purpose <- read.csv("~/1-descriptives-and-graphs-leahschultz/oysup_teacher_self.csv")
+purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_self.csv")
+conflict <- purpose %>%
+  dplyr::select(cbmom_1:cbmom_5)
+conflict.scaled <- as.data.frame(scale(conflict))
+purpose <- purpose %>%
+  dplyr::select(-(cbmom_1:cbmom_5))
+purpose <- cbind(purpose, conflict.scaled)
 ```
 
 ## 1. Move your data into a long format and a wide format. Did you have any specific challenges that you encountered? If so, discuss them.
