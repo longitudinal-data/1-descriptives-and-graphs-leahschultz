@@ -18,45 +18,52 @@ library(ggplot2)
 library(broom)
 library(merTools)
 library(sjPlot)
+oysup <- read.csv("~/1-descriptives-and-graphs-leahschultz/oysup_teacher_self.csv")
 purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_self.csv")
+oysup <- oysup %>%
+  dplyr::select(FAMID, neuro_7s:neuro_10s)
+dems <- purpose %>%
+  dplyr::select(SEX2)
+oysup <- cbind(oysup, dems)
 ```
 
 First, restructuring data:
 
 ```{r}
-purpose_long <- tbl_df(purpose) %>%
-  gather(-c(FAMID, SEX2, MEDUC2, MPEDUC2), key = "grade", value = "value") %>%
+oysup_long <- tbl_df(oysup) %>%
+  gather(c(neuro_7s:neuro_10s), key = "grade", value = "value") %>%
   separate(grade, into = c("variable", "grade"), sep = "_", convert = T) %>%
+  separate(grade, into = c("grade", "delete"), sep = "s") %>%
+  mutate(grade = as.numeric(grade)) %>%
+  dplyr::select(-delete) %>%
   spread(variable, value)
-
-purpose_long_elem <- purpose_long %>% 
-  filter(grade != 21)
+oysup_long
 ```
 
 ## 1. Run linear models on all of your subjects (a basic regression). What is the average intercept, the average slope?
 
 ```{r}
-model1 <- lm(cbmom ~ grade, data = purpose_long)
+model1 <- lm(neuro ~ grade, data = oysup_long)
 summary(model1)
 ```
 
-Average intercept = 1.28
+### Average intercept = 3.53
 
-Average slope = .08
+### Average slope = -.04
 
 ## 2. Now run a mlm/lmer model with only a random intercept.
 ```{r}
-model2 <- lmer(cbmom ~ (1 | FAMID), data = purpose_long)
+model2 <- lmer(neuro ~ (1 | FAMID), data = oysup_long)
 summary(model2)
 ```
 
 ## 3. What is the ICC?
 
-ICC = % between- vs. within-person variance
+### ICC = % between- vs. within-person variance
 
-variance by ID / variance by ID + residual variance
+### variance by ID / variance by ID + residual variance
 
-.64 / (.64 + 1.30) = .33
+### .50 / (.50 + .60) = .45
 
 
 ## What does residual variance look like compared to linear model? Create a graph to show this effect.
@@ -75,13 +82,15 @@ resid_plot <- ggplot(resid_df, aes(x = Type, y = Mean)) +
 resid_plot
 ```
 
-Absolute value of the average residual variance is lower in the mixed model, since we're accounting for individual-level, random effects.
+### Average residual variance is lower in the mixed model, since we're accounting for individual-level, random effects.
 
 ## 3. Introduce a fixed slope term. What is the difference in terms of the fixed effects estimates between this estimate and the previous? Of the residual standard error? Create a graph to show both fixed effects estimates and the CIs around them.
 
 ```{r}
-model3 <- lmer(cbmom ~ grade + (1 | FAMID), data = purpose_long)
+model3 <- lmer(neuro ~ grade + (1 | FAMID), data = oysup_long)
 summary(model3)
+
+fixef(model2) - fixef(model3)[1]
 
 fe_2 <- tidy(model2, effects = "fixed", conf.int = T, conf.level = 0.95)
 fe_3 <- tidy(model3, effects = "fixed", conf.int = T, conf.level = 0.95)
@@ -96,20 +105,29 @@ fe_plot <- ggplot(fe_df, aes(x = Parameter, y = Fixed_Effects)) +
   geom_col(aes(fill = Model)) +
   geom_errorbar(aes(ymin = Lower_CI, ymax = Upper_CI))
 fe_plot
+
+sigma(model2) - sigma(model3)[1]
 ```
 
-Fixed effect estimate for intercept decreased from 1.60 to 1.32, because we are accounting for some of the variance with our new fixed slope term.
+### Fixed effect estimate for intercept increased by .37 points from 3.20 to 3.57.
+
+### Residual standard error decreased by .002. Seems like adding a fixed slope term did not do much to improve the model.
 
 ## 4. Run an additional model with a random slope. How does this change compare to the previous model? Should you keep the random slope or not?
 
 ```{r}
-model4 <- lmer(cbmom ~ grade + (1 + grade | FAMID), data = purpose_long)
+model4 <- lmer(neuro ~ grade + (1 + grade | FAMID), data = oysup_long)
 summary(model4)
+
+sigma(model3)[1] - sigma(model4)[1]
+anova(model3, model4)
 ```
+
+### The residual error decreases .03 with the addition of a random slope. A likelihood ratio test indicates that the model fit is better with this new parameter, as well. I'll keep the random slope.
 
 ## 5. Interpret the correlation between the slope and the intercept.
 
-Correlation between slope and intercept = -.89. 
+### Correlation between slope and intercept = -.97. Adolescents who are initially higher on neuroticism will tend to decrease over time compared to children who are initially lower on neuroticism.
 
 ## 6. Create a density plot of the random effects from your final model.
 
@@ -122,27 +140,31 @@ raneff_plot <- ggplot(random_params, aes(x = estimate, color = term)) +
 raneff_plot
 ```
 
-## 7. Create a caterpillar plot of the random effects. Is there any person that seems odd in terms of a large standard errors around intercept and slope estimates?
+## 7. Create a caterpillar plot of the random effects. Is there any person that seems odd in terms of large standard errors around intercept and slope estimates?
 
 ```{r}
 re.sim <- REsim(model4)
 plotREsim(re.sim)
 ```
 
+### It looks as if there are about many individuals who deviate from the fixed slope, and are thus driving the model to be better represented by a random slope. There is only one student who seems to deviate notably from the fixed intercept.
+
+
 ## 8. Create a plot of the trajectory, along with a spaghetti plot of each person’s individual slope. Set the alpha level (transparency) on the individual slopes to make them easier to see.
 
 ```{r warning=FALSE}
-predict <- predictInterval(merMod = model4, newdata = purpose_long_elem,
+predict <- predictInterval(merMod = model4, newdata = oysup_long,
                            level = 0.9, n.sims = 100, 
                            stat = "median", include.resid.var = TRUE)
-growth_df <- cbind(purpose_long_elem, predict$fit)
+growth_df <- cbind(oysup_long, predict$fit)
 
-growth_plot <- ggplot(purpose_long_elem, aes(x = grade, y = predict$fit)) +
+growth_plot <- ggplot(oysup_long, aes(x = grade, y = predict$fit)) +
   geom_line(aes(group = FAMID), alpha = .2) +
   stat_smooth(method = lm) +
   theme_bw()+
   xlab("Grade")+
-  ylab("Child-reported conflict with mother")
+  ylab("Self-Reported Neuroticism")+
+  ylim(1,5)
 growth_plot
 ```
 
