@@ -9,6 +9,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Chapter 7: SEM
 ```{r warning = FALSE, message = FALSE}
 library(lme4)
 library(ggplot2)
