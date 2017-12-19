@@ -11,38 +11,40 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Chapter 2: LDA Basics
 ```{r loading, message=FALSE, warning=FALSE}
-library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(dplyr)
+oysup <- read.csv("~/1-descriptives-and-graphs-leahschultz/oysup_teacher_self.csv")
 purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_self.csv")
-conflict <- purpose %>%
-  dplyr::select(cbmom_1:cbmom_5)
-conflict.scaled <- as.data.frame(scale(conflict))
-purpose <- purpose %>%
-  dplyr::select(-(cbmom_1:cbmom_5))
-purpose <- cbind(purpose, conflict.scaled)
+oysup <- oysup %>%
+  dplyr::select(FAMID, neuro_7s:neuro_10s)
+dems <- purpose %>%
+  dplyr::select(SEX2)
+oysup <- cbind(oysup, dems)
 ```
 
 ## 1. Move your data into a long format and a wide format. Did you have any specific challenges that you encountered? If so, discuss them.
 
 ```{r #1}
-purpose_long <- tbl_df(purpose) %>%
-  gather(-c(FAMID, SEX2, MEDUC2, MPEDUC2), key = "grade", value = "value") %>%
+oysup_long <- tbl_df(oysup) %>%
+  gather(c(neuro_7s:neuro_10s), key = "grade", value = "value") %>%
   separate(grade, into = c("variable", "grade"), sep = "_", convert = T) %>%
+  separate(grade, into = c("grade", "delete"), sep = "s") %>%
+  dplyr::select(-delete) %>%
   spread(variable, value)
-purpose_long
+oysup_long
 
-purpose_wide <- tbl_df(purpose_long) %>%
-  gather(-c(FAMID, SEX2, MEDUC2, MPEDUC2, grade), key = "variable", value = "value") %>%
+oysup_wide <- tbl_df(oysup_long) %>%
+  gather(-c(FAMID, SEX2, grade), key = "variable", value = "value") %>%
   unite(VarG, variable, grade)  %>%
   spread(key = VarG, value = value) %>%
   select_if(~sum(!is.na(.)) > 0)
-purpose_wide
+oysup_wide
 ```
 
 Challenges: First I forgot to exclude the ID variable and stable demographics, so R tried to make it into a value. I had a lot of variables that had repeated measures, so I had to think about how to split them after I gathered everything. Also, my variables were not consistently named because I was mixing naming conventions (my preferred conventions, and then the ones that OPP used). I went in and cleaned up my file a lot more so that I could use the separate function easily in the next step.
 
-Another thing that was difficult was I ended up with some NA columns when I spread my data back to wide format -- the drop and fill arguments didn't seem to help, so I had to find a solution for how to drop the NA columns from the key-pair combinations that didn't exist (for example, purpose wasn't assessed at grade 1).
+Another thing that was difficult was I ended up with some NA columns when I spread my data back to wide format -- the drop and fill arguments didn't seem to help, so I had to find a solution for how to drop the NA columns from the key-pair combinations that didn't exist (for example, oysup wasn't assessed at grade 1).
 
 
 ## 2. Create a wave variable and date variable (if applicable).
@@ -51,9 +53,9 @@ I already have a grade variable, which is equivalent to wave for my purposes, an
 ## 3. What is your sample size for each wave of assessment?
 
 ```{r}
-purpose_long %>% 
+oysup_long %>% 
   group_by(grade) %>%
-  filter(!is.na(cbmom)) %>%
+  filter(!is.na(neuro)) %>%
   count()
 ```
 
@@ -63,46 +65,40 @@ Not applicable for my analyses.
 
 ## 5. Graph your data using the different time metrics, fitting individual curves for each person.
 
-Needed to drop variables at age 21:
-```{r}
-purpose_long_elem <- purpose_long %>% 
-  filter(grade != 21)
-```
-
-Plotting individual curves for conflict with mother over time:
-```{r}
-gg2 <- ggplot(purpose_long_elem, aes(x = grade, y = cbmom, group = FAMID)) +
-  geom_line() + geom_point()
+Plotting individual curves for neuroticism over time:
+```{r, warning=F}
+gg2 <- ggplot(oysup_long, aes(x = grade, y = neuro, group=FAMID)) +
+  geom_line() +
+  aes(colour = factor(FAMID)) + guides(colour=FALSE) +
+  scale_x_discrete(limits = c("7","8","9","10"))
 gg2
 ```
 
-```{r}
-gg3 <- gg2 + aes(colour = factor(FAMID)) + guides(colour=FALSE) 
-gg3
-```
+Predicted values should look a little better, because each time point is an average of just two values...
 
-Since these are sums and not averages, these curves aren't AS interesting at the moment (the predicted values look better).
-
-```{r}
+```{r, warning=F}
 ## Subset of 10 curves
 set.seed(11)
-ex.random <- purpose_long_elem %>% 
-  select(FAMID) %>% 
+ex.random <- oysup_long %>% 
+  dplyr::select(FAMID) %>% 
   distinct %>% 
   sample_n(10) 
 
 example <-
-  left_join(ex.random, purpose_long_elem) 
+  left_join(ex.random, oysup_long) 
 
-gg4 <- ggplot(example, aes(x = grade, y = cbmom, group = FAMID)) + 
-  geom_point() + stat_smooth(method="lm") + facet_wrap(~FAMID)
+gg4 <- ggplot(example, aes(x = grade, y = neuro, group = FAMID)) + 
+  geom_point() + stat_smooth(method="lm") + facet_wrap(~FAMID) +
+  ylim(1,5)+
+  scale_x_discrete(limits = c("7","8","9","10"))
 gg4
 ```
 
 ## 6. Create an overall average trend of your data (split up into groups if appropriate). Attempt to color your individual data points and/or shade different lines (highlight some participants, highlight the average trend line but not the individual level lines).
 
-```{r}
-gg5 <- ggplot(purpose_long_elem, aes(x = jitter(grade), y = cbmom)) +
+```{r, warning=F}
+
+gg5 <- ggplot(oysup_long, aes(x = jitter(as.numeric(grade)), y = neuro)) +
   geom_point() + stat_smooth() 
 gg5
 ```
@@ -110,8 +106,8 @@ gg5
 ## 7. Look at the correlations of your DV across time.
 
 ```{r}
-conflict_mom <- purpose_wide %>%
-  select(cbmom_1:cbmom_5)
-cor(conflict_mom, use = "complete.obs")
+neuro <- oysup_wide %>%
+  select(neuro_10:neuro_9)
+cor(neuro, use = "complete.obs")
 ```
 
