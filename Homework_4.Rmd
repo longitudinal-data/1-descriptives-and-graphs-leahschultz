@@ -13,23 +13,25 @@ knitr::opts_chunk$set(echo = TRUE)
 library(lme4)
 library(ggplot2)
 library(lavaan)
+library(semPlot)
+library(tidyverse)
 oysup <- read.csv("~/Desktop/oysup_teacher_self.csv")
 ```
 
 ## 1) Fit a measurement model to your constructs at one time point. Try out the different types of scaling discussed in class. What changes? What stays the same?
 
 ```{r}
-## Marker variable
+# Marker variable
 mod.1 <- 'neuro_t =~ TPER7_08 + TPER7_10 + TPER7_17R + TPER7_12R + TPER7_13R'
 fit.1 <- cfa(mod.1, data=oysup)
 summary(fit.1, fit.measures=TRUE)
 
-## Fixed factor
+# Fixed factor
 mod.2 <- 'neuro_t =~ TPER7_08 + TPER7_10 + TPER7_17R + TPER7_12R + TPER7_13R'
 fit.2 <- cfa(mod.2, std.lv = T, data=oysup)
 summary(fit.2, fit.measures=TRUE)
 
-## Effects coding
+# Effects coding
 mod.3 <- 'neuro_t =~ NA*TPER7_08 + L1*TPER7_08 + L2*TPER7_10 + L3*TPER7_17R + L4*TPER7_12R + L5*TPER7_13R
 L1 == 5 - L2 - L3 - L4 - L5'
 fit.3 <- cfa(mod.3, data=oysup)
@@ -111,6 +113,7 @@ fit.5 <- cfa(mod.5, data=oysup)
 summary(fit.5, fit.measures=TRUE)
 ```
 
+
 Based on CFI and RSMEA values, the auto-regressive model fits the data a bit poorer than the other. 
 
 ## 4) Fit a longitudinal growth model in SEM and in HLM. Compare and contrast the differences.
@@ -182,14 +185,27 @@ The estimate of the slope did not change; however, the estimate of the intercept
 ## 8) Try a different type of estimation (see lavaan tutorial for details). How does that change your model?
 
 ```{r}
-
+model.11 <- 'neuro_i =~ 1*neuro_7t + 1*neuro_8t + 1*neuro_9t + 1*neuro_10t
+            neuro_s =~ 0*neuro_7t + 1*neuro_8t + 2*neuro_9t + 3*neuro_10t'
+fit.11 <- growth(model.11, data = oysup, estimator = "DWLS")
+summary(fit.11)
+fitMeasures(fit.11, c("cfi", "rmsea"))
+fitMeasures(fit.6, c("cfi", "rmsea"))
 ```
-
+Not much of a difference between using diagonal weighted least squares estimation and the default (maximum likelihoods).
 
 ## 9) Provide semplots for each of the models.
 
 ```{r}
-
+semPaths(fit.1)
+semPaths(fit.2)
+semPaths(fit.3)
+semPaths(fit.4)
+semPaths(fit.5)
+semPaths(fit.6)
+semPaths(fit.8)
+semPaths(fit.9)
+semPaths(fit.10)
 ```
 
 
