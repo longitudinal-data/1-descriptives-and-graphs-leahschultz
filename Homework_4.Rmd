@@ -8,40 +8,221 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
 # Chapter 7: SEM
 ```{r warning = FALSE, message = FALSE}
 library(lme4)
 library(ggplot2)
-purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_teacher_self.csv")
-y_t_all <- read.csv("~/Box Sync/OYSUP Data/OYSUP Data (csv) and Codebooks/youth_best_teacher_Oct-9.csv")
-require(MASS)
-require(dplyr)
-gender <- y_t_all %>%
-   dplyr::select(SEX3)
-newdata <- merge(purpose, gender)
+library(lavaan)
+oysup <- read.csv("~/Desktop/oysup_teacher_self.csv")
 ```
 
 ## 1) Fit a measurement model to your constructs at one time point. Try out the different types of scaling discussed in class. What changes? What stays the same?
 
+```{r}
+## Marker variable
+mod.1 <- 'neuro_t =~ TPER7_08 + TPER7_10 + TPER7_17R + TPER7_12R + TPER7_13R'
+fit.1 <- cfa(mod.1, data=oysup)
+summary(fit.1, fit.measures=TRUE)
+
+## Fixed factor
+mod.2 <- 'neuro_t =~ TPER7_08 + TPER7_10 + TPER7_17R + TPER7_12R + TPER7_13R'
+fit.2 <- cfa(mod.2, std.lv = T, data=oysup)
+summary(fit.2, fit.measures=TRUE)
+
+## Effects coding
+mod.3 <- 'neuro_t =~ NA*TPER7_08 + L1*TPER7_08 + L2*TPER7_10 + L3*TPER7_17R + L4*TPER7_12R + L5*TPER7_13R
+L1 == 5 - L2 - L3 - L4 - L5'
+fit.3 <- cfa(mod.3, data=oysup)
+summary(fit.3, fit.measures=TRUE)
+
+```
+
+Using the marker variable approach, the loading of the first factor onto the latent variable is fixed to 1, and the other loadings relative to this range from .64 to 1.19. The CFI is .94. Using the fixed factor approach, the item loadings change -- they range from .53 to .98. The residual variances of the items stay the same, but of course the variance of the latent neuroticism variable changes to 1. Using effects coding, the item loadings onto the latent variable change once more, ranging from .66 to 1.23, and the variance of the latent variable changes back to being freely estimated (.63).
+
 ## 2) What do the fit statistics say about your latent variable? Good/bad? Is your latent variable just identified/saturated, under-identified, or over-identified?
+
+```{r}
+fitMeasures(fit.1)
+```
+
+Across all approaches (regardless of scaling), the CFI is .94 (great!), while the RMSEA is .15 (poor). There are 5 degrees of freedom, meaning that the model is over-identified - yay.
 
 ## 3) Fit a longitudinal CFA model where you a) first correlate your latent factors across time and then b) a second model that predicts later times by a prevous time (i.e., auto-regressive; t1 -> t2 -> t3). What are your conclusions? How does one differ from the other?
 
+```{r}
+# Residuals correlated over time
+mod.4 <- 'neuro_t1 =~ TPER7_08 + TPER7_10 + TPER7_17R + TPER7_12R + TPER7_13R
+neuro_t2 =~ TPER8_08 + TPER8_10 + TPER8_17R + TPER8_12R + TPER8_13R
+neuro_t3 =~ TPER9_08 + TPER9_10 + TPER9_17R + TPER9_12R + TPER9_13R
+neuro_t4 =~ TPER10_08 + TPER10_10 + TPER10_17R + TPER10_12R + TPER10_13R
+
+TPER7_08 ~~ TPER8_08 + TPER9_08 + TPER10_08
+TPER8_08 ~~ TPER9_08 + TPER10_08
+TPER9_08 ~~ TPER10_08
+
+TPER7_10 ~~ TPER8_10 + TPER9_10 + TPER10_10
+TPER8_10 ~~ TPER9_10 + TPER10_10
+TPER9_10 ~~ TPER10_10
+
+TPER7_17R ~~ TPER8_17R + TPER9_17R + TPER10_17R
+TPER8_17R ~~ TPER9_17R + TPER10_17R
+TPER9_17R ~~ TPER10_17R
+
+TPER7_12R ~~ TPER8_12R + TPER9_12R + TPER10_12R
+TPER8_12R ~~ TPER9_12R + TPER10_12R
+TPER9_12R ~~ TPER10_12R
+
+TPER7_13R ~~ TPER8_13R + TPER9_13R + TPER10_13R
+TPER8_13R ~~ TPER9_13R + TPER10_13R
+TPER9_13R ~~ TPER10_13R'
+fit.4 <- cfa(mod.4, data=oysup)
+summary(fit.4, fit.measures=TRUE)
+
+# Auto-regressive model
+mod.5 <- 'neuro_t1 =~ TPER7_08 + TPER7_10 + TPER7_17R + TPER7_12R + TPER7_13R
+neuro_t2 =~ TPER8_08 + TPER8_10 + TPER8_17R + TPER8_12R + TPER8_13R
+neuro_t3 =~ TPER9_08 + TPER9_10 + TPER9_17R + TPER9_12R + TPER9_13R
+neuro_t4 =~ TPER10_08 + TPER10_10 + TPER10_17R + TPER10_12R + TPER10_13R
+
+TPER7_08 ~~ TPER8_08 + TPER9_08 + TPER10_08
+TPER8_08 ~~ TPER9_08 + TPER10_08
+TPER9_08 ~~ TPER10_08
+
+TPER7_10 ~~ TPER8_10 + TPER9_10 + TPER10_10
+TPER8_10 ~~ TPER9_10 + TPER10_10
+TPER9_10 ~~ TPER10_10
+
+TPER7_17R ~~ TPER8_17R + TPER9_17R + TPER10_17R
+TPER8_17R ~~ TPER9_17R + TPER10_17R
+TPER9_17R ~~ TPER10_17R
+
+TPER7_12R ~~ TPER8_12R + TPER9_12R + TPER10_12R
+TPER8_12R ~~ TPER9_12R + TPER10_12R
+TPER9_12R ~~ TPER10_12R
+
+TPER7_13R ~~ TPER8_13R + TPER9_13R + TPER10_13R
+TPER8_13R ~~ TPER9_13R + TPER10_13R
+TPER9_13R ~~ TPER10_13R
+
+neuro_t4 ~ neuro_t3
+neuro_t3 ~ neuro_t2
+neuro_t2 ~ neuro_t1'
+fit.5 <- cfa(mod.5, data=oysup)
+summary(fit.5, fit.measures=TRUE)
+```
+
+Based on CFI and RSMEA values, the auto-regressive model fits the data a bit poorer than the other. 
+
 ## 4) Fit a longitudinal growth model in SEM and in HLM. Compare and contrast the differences.
+
+```{r}
+
+```
+
 
 ## 5) Constrain the residual variances to be equal. Does this change the fit of your model?
 
+```{r}
+mod.8 <- 'neuro_t1 =~ TPER7_08 + TPER7_10 + TPER7_17R + TPER7_12R + TPER7_13R
+neuro_t2 =~ TPER8_08 + TPER8_10 + TPER8_17R + TPER8_12R + TPER8_13R
+neuro_t3 =~ TPER9_08 + TPER9_10 + TPER9_17R + TPER9_12R + TPER9_13R
+neuro_t4 =~ TPER10_08 + TPER10_10 + TPER10_17R + TPER10_12R + TPER10_13R
+
+TPER7_08 ~~ TPER8_08 + TPER9_08 + TPER10_08
+TPER8_08 ~~ TPER9_08 + TPER10_08
+TPER9_08 ~~ TPER10_08
+
+TPER7_10 ~~ TPER8_10 + TPER9_10 + TPER10_10
+TPER8_10 ~~ TPER9_10 + TPER10_10
+TPER9_10 ~~ TPER10_10
+
+TPER7_17R ~~ TPER8_17R + TPER9_17R + TPER10_17R
+TPER8_17R ~~ TPER9_17R + TPER10_17R
+TPER9_17R ~~ TPER10_17R
+
+TPER7_12R ~~ TPER8_12R + TPER9_12R + TPER10_12R
+TPER8_12R ~~ TPER9_12R + TPER10_12R
+TPER9_12R ~~ TPER10_12R
+
+TPER7_13R ~~ TPER8_13R + TPER9_13R + TPER10_13R
+TPER8_13R ~~ TPER9_13R + TPER10_13R
+TPER9_13R ~~ TPER10_13R
+
+TPER7_08 ~~ u*TPER7_08
+TPER7_10 ~~ u*TPER7_10
+TPER7_17R ~~ u*TPER7_17R
+TPER7_12R ~~ u*TPER7_12R
+TPER7_13R ~~ u*TPER7_13R
+TPER8_08 ~~ u*TPER8_08
+TPER8_10 ~~ u*TPER8_10
+TPER8_17R ~~ u*TPER8_17R
+TPER8_12R ~~ u*TPER8_12R 
+TPER8_13R ~~ u*TPER8_13R
+TPER9_08 ~~ u*TPER9_08
+TPER9_10 ~~ u*TPER9_10
+TPER9_17R ~~ u*TPER9_17R
+TPER9_12R ~~ u*TPER9_12R
+TPER9_13R ~~ u*TPER9_13R
+TPER10_08 ~~ u*TPER10_08
+TPER10_10 ~~ u*TPER10_10
+TPER10_17R ~~ u*TPER10_17R
+TPER10_12R ~~ u*TPER10_12R
+TPER10_13R ~~ u*TPER10_13R'
+
+model.1 <- 'neuro_i =~ 1*t1 + 1*t2 + 1*t3 + 1*t4
+            neuro_s =~ 0*t1 + 1*t2 + 2*t3 + 3*t4'
+fit.1 <- growth(model.1, data=Demo.growth)
+summary(fit.1)
+fit.8 <- growth(mod.8, data=oysup)
+summary(fit.8, fit.measures=TRUE)
+```
+Yep. These constraints are overly restrictive for the nature of this data across four years, and so the fit drops to a CFI of .83 from .90, and the RMSEA increases from .08 to almost .10.
+
 ## 6) Contrain your slope to be fixed, not random. How does this change your model?
+
+```{r}
+
+```
+
 
 ## 7) Change the time metric in your SEM growth model. How does that change your estimates? Does it change your fit statistics?
 
+```{r}
+
+```
+
+
 ## 8) Try a different type of estimation (see lavaan tutorial for details). How does that change your model?
+
+```{r}
+
+```
+
 
 ## 9) Provide semplots for each of the models.
 
+```{r}
+
+```
+
+
 ## 10) Test measurement invariance across time for your construct. Can you run growth models? If there is evidence of non-invariance, what seems to be the problem?
+
+```{r}
+
+```
+
 
 ## 11) Fit a second order growth model. Compare and contrast the estimates with the normal latent growth model.
 
+```{r}
+
+```
+
+
 ## 12) Fit a series of multiple group models. Constrain some parameters and compare the fit.
+
+```{r}
+
+```
+
