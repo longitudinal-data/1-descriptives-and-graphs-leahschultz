@@ -156,12 +156,16 @@ summary(fit.9)
 
 anova(fit.6, fit.9)
 ```
+
 Honestly, not much changed, but there wasn't much variation in the slope to begin with. Now, the slope's variance is constrained to zero, whereas before, it was estimated at -.05 (basically zero). The intercept increased by a teeny tiny bit, and the magnitude of the (negative) fixed slope became a teeny tiny bit larger. However, the intercept variance did increase from .23 to .37, likely because that extra variance has to go somewhere!
 
 ## 7) Change the time metric in your SEM growth model. How does that change your estimates? Does it change your fit statistics?
 
 ```{r}
-
+model.10 <- 'neuro_i =~ 1*neuro_7t + 1*neuro_8t + 1*neuro_9t + 1*neuro_10t
+            neuro_s =~ 0*neuro_7t + 1*neuro_8t + 2*neuro_9t + 3*neuro_10t'
+fit.10 <- growth(model.10, data = oysup)
+summary(fit.10)
 ```
 
 
