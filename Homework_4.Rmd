@@ -116,13 +116,89 @@ Based on CFI and RSMEA values, the auto-regressive model fits the data a bit poo
 ## 4) Fit a longitudinal growth model in SEM and in HLM. Compare and contrast the differences.
 
 ```{r}
+# SEM
+model.6 <- 'neuro_i =~ 1*neuro_7t + 1*neuro_8t + 1*neuro_9t + 1*neuro_10t
+            neuro_s =~ 0*neuro_7t + 1*neuro_8t + 2*neuro_9t + 3*neuro_10t'
+fit.6 <- growth(model.6, data = oysup)
+summary(fit.6)
 
+# restructuring for HLM
+oysup_long <- tbl_df(oysup) %>%
+  gather(c(neuro_7t:neuro_10t), key = "grade", value = "value") %>%
+  separate(grade, into = c("variable", "grade"), sep = "_", convert = T) %>%
+  separate(grade, into = c("grade", "delete"), sep = "t") %>%
+  mutate(grade = as.numeric(grade)) %>%
+  dplyr::select(-delete) %>%
+  spread(variable, value)
+
+# HLM
+model.7 <- lmer(neuro ~ 1 + grade + (1 + grade | FAMID), data=oysup_long)
+summary(model.7)
 ```
 
+Both models estimate the average slope at about -.07.
 
 ## 5) Constrain the residual variances to be equal. Does this change the fit of your model?
 
 ```{r}
+
+```
+Yep. These constraints are overly restrictive for the nature of this data across four years, and so the fit drops to a CFI of .83 from .90, and the RMSEA increases from .08 to almost .10.
+
+## 6) Contrain your slope to be fixed, not random. How does this change your model?
+
+```{r}
+model.9 <- 'neuro_i =~ 1*neuro_7t + 1*neuro_8t + 1*neuro_9t + 1*neuro_10t
+            neuro_s =~ 0*neuro_7t + 1*neuro_8t + 2*neuro_9t + 3*neuro_10t
+            neuro_s ~~ 0*neuro_s'
+fit.9 <- growth(model.9, data = oysup)
+summary(fit.9)
+
+anova(fit.6, fit.9)
+```
+Honestly, not much changed, but there wasn't much variation in the slope to begin with. Now, the slope's variance is constrained to zero, whereas before, it was estimated at -.05 (basically zero). The intercept increased by a teeny tiny bit, and the magnitude of the (negative) fixed slope became a teeny tiny bit larger. However, the intercept variance did increase from .23 to .37, likely because that extra variance has to go somewhere!
+
+## 7) Change the time metric in your SEM growth model. How does that change your estimates? Does it change your fit statistics?
+
+```{r}
+
+```
+
+
+## 8) Try a different type of estimation (see lavaan tutorial for details). How does that change your model?
+
+```{r}
+
+```
+
+
+## 9) Provide semplots for each of the models.
+
+```{r}
+
+```
+
+
+## 10) Test measurement invariance across time for your construct. Can you run growth models? If there is evidence of non-invariance, what seems to be the problem?
+
+```{r}
+
+```
+
+
+## 11) Fit a second order growth model. Compare and contrast the estimates with the normal latent growth model.
+
+```{r}
+
+```
+
+
+## 12) Fit a series of multiple group models. Constrain some parameters and compare the fit.
+
+```{r}
+
+```
+
 mod.8 <- 'neuro_t1 =~ TPER7_08 + TPER7_10 + TPER7_17R + TPER7_12R + TPER7_13R
 neuro_t2 =~ TPER8_08 + TPER8_10 + TPER8_17R + TPER8_12R + TPER8_13R
 neuro_t3 =~ TPER9_08 + TPER9_10 + TPER9_17R + TPER9_12R + TPER9_13R
@@ -168,61 +244,3 @@ TPER10_10 ~~ u*TPER10_10
 TPER10_17R ~~ u*TPER10_17R
 TPER10_12R ~~ u*TPER10_12R
 TPER10_13R ~~ u*TPER10_13R'
-
-model.1 <- 'neuro_i =~ 1*t1 + 1*t2 + 1*t3 + 1*t4
-            neuro_s =~ 0*t1 + 1*t2 + 2*t3 + 3*t4'
-fit.1 <- growth(model.1, data=Demo.growth)
-summary(fit.1)
-fit.8 <- growth(mod.8, data=oysup)
-summary(fit.8, fit.measures=TRUE)
-```
-Yep. These constraints are overly restrictive for the nature of this data across four years, and so the fit drops to a CFI of .83 from .90, and the RMSEA increases from .08 to almost .10.
-
-## 6) Contrain your slope to be fixed, not random. How does this change your model?
-
-```{r}
-
-```
-
-
-## 7) Change the time metric in your SEM growth model. How does that change your estimates? Does it change your fit statistics?
-
-```{r}
-
-```
-
-
-## 8) Try a different type of estimation (see lavaan tutorial for details). How does that change your model?
-
-```{r}
-
-```
-
-
-## 9) Provide semplots for each of the models.
-
-```{r}
-
-```
-
-
-## 10) Test measurement invariance across time for your construct. Can you run growth models? If there is evidence of non-invariance, what seems to be the problem?
-
-```{r}
-
-```
-
-
-## 11) Fit a second order growth model. Compare and contrast the estimates with the normal latent growth model.
-
-```{r}
-
-```
-
-
-## 12) Fit a series of multiple group models. Constrain some parameters and compare the fit.
-
-```{r}
-
-```
-
