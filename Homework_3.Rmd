@@ -15,17 +15,167 @@ library(dplyr)
 library(lme4)
 library(ggplot2)
 library(merTools)
-purpose <- read.csv("~/1-descriptives-and-graphs-leahschultz/oysup_teacher_self.csv")
+library(sjPlot)
+library(broom)
+library(tidyr)
+oysup <- read.csv("~/1-descriptives-and-graphs-leahschultz/oysup_teacher_self.csv")
+purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_self.csv")
+oysup <- oysup %>%
+  dplyr::select(FAMID, neuro_7s:neuro_10s)
+dems <- purpose %>%
+  dplyr::select(SEX2, MPEDUC2)
+oysup <- cbind(oysup, dems)
 ```
 
-## 1. Run a series of models using a time-invariant nominal covariate. a) where the covariate only predicts the intercept b) predicts both intercept and slope c) is rescaled eg centering. For all models, how does your model change from model to model. What is your final model?
+First, restructuring data:
+
+```{r}
+oysup_long <- tbl_df(oysup) %>%
+  gather(c(neuro_7s:neuro_10s), key = "grade", value = "value") %>%
+  separate(grade, into = c("variable", "grade"), sep = "_", convert = T) %>%
+  separate(grade, into = c("grade", "delete"), sep = "s") %>%
+  mutate(grade = as.numeric(grade)) %>%
+  dplyr::select(-delete) %>%
+  spread(variable, value)
+oysup_long
+```
+
+
+## 1. Run a series of models using a time-invariant nominal covariate, a) where the covariate only predicts the intercept b) predicts both intercept and slope c) is rescaled eg centering. For all models, how does your model change from model to model? What is your final model?
+
+```{r}
+## Getting a subset so that the models are on equivalent datasets:
+oysup_long2 <- subset(oysup_long, subset = !is.na(SEX2))
+
+model_null <- lmer(neuro ~ grade + (1 | FAMID), data = oysup_long2)
+
+model1 <- lmer(neuro ~ grade + SEX2 + (1 | FAMID), data = oysup_long2)
+summary(model1)
+
+anova(model_null, model1)
+```
+
+When the covariate predicts the intercept, we can see that gender accounts for some of the differences in initial neuroticism (which is verified by the improved fit in the model when gender is included). Specifically, female students rated themselves as more neurotic on average than male students (by .43 points on a scale from 1 to 5), across grades.
+
+```{r}
+model2 <- lmer(neuro ~ grade*SEX2 + (1 | FAMID), data = oysup_long2)
+summary(model2)
+
+anova(model1, model2)
+```
+
+When the covariate predicts the slope as well as the intercept and we get an interaction between time and gender, we can see that gender no longer accounts for differences in initial neuroticism. In addition, the interaction doesn't seem to add anything to the model. It doesn't seem that gender affects the degree to which adolescents change in neuroticism, even if it affects their initial levels.
+
+```{r}
+SEX2_Z <- scale(oysup_long2$SEX2, center = T)
+
+model_null <- lmer(neuro ~ grade + (1 | FAMID), data = oysup_long2)
+
+model3 <- lmer(neuro ~ grade + SEX2_Z + (1 | FAMID), data = oysup_long2)
+summary(model3)
+
+anova(model_null, model3)
+
+model4 <- lmer(neuro ~ grade*SEX2_Z + (1 | FAMID), data = oysup_long2)
+summary(model4)
+
+anova(model3, model4)
+```
+
+When I standardized the sex variable, the estimate was cut in half, to a difference of .21 units in neuroticism between men and women. Previously, the data was coded as 1 and 2 instead of as 0 and 1.
+
+My final model is model C, the model predicting the intercept but not the slope, using the standardized sex variable. 
 
 ## 2. Introduce a time-invariant continuous covariate and run models a-c from #1.
 
-## 3. Graph both of your final models for the continuous and nominal models above.
+```{r}
+oysup_long3 <- subset(oysup_long, subset = !is.na(MPEDUC2))
 
-## 4. Calculate confidence intervals around your estimates for your final models
+model_null <- lmer(neuro ~ grade + (1 | FAMID), data = oysup_long3)
+
+#A)
+model1 <- lmer(neuro ~ grade + MPEDUC2 + (1 | FAMID), data = oysup_long3)
+summary(model1)
+
+anova(model_null, model1)
+```
+
+A) As students' fathers' education level increases by 1 unit, the students' self-reported neuroticism decreases by .07 units.
+
+```{r, warning=F}
+#B)
+model2 <- lmer(neuro ~ grade*MPEDUC2 + (1 | FAMID), data = oysup_long3)
+summary(model2)
+
+anova(model1, model2)
+```
+
+B) Fathers' level of education does not affect the degree to which students change in self-reported neuroticism over their adolescence.
+
+```{r, warning=F}
+#C)
+MPEDUC2_Z <- scale(oysup_long3$MPEDUC2, center = T, scale = F)
+
+model3 <- lmer(neuro ~ grade + MPEDUC2_Z + (1 | FAMID), data = oysup_long3)
+summary(model3)
+
+anova(model_null, model3)
+
+model4 <- lmer(neuro ~ grade*MPEDUC2_Z + (1 | FAMID), data = oysup_long3)
+summary(model4)
+
+anova(model3, model4)
+```
+
+C) Though the estimate for the grade variable doesn't change, the estimate for a one unit increase in father's education becomes a decrease of .13 points on neuroticism, compared to .07. The interaction term still does not contribute anything meaningful to the model.
+
+## 3. Graph both of your final models for the continuous and nominal models above.
+```{r, warning=F}
+oysup_long2$SEX2 <- as.factor(oysup_long2$SEX2)
+
+model3 <- lmer(neuro ~ grade + SEX2 + (1 | FAMID), data = oysup_long2)
+summary(model3)
+
+library(broom)
+model3_aug <- augment(model3)
+nominal_plot <- ggplot(model3_aug, aes(x = grade, y = .fitted, color=factor(SEX2))) +
+  stat_smooth(aes(group = SEX2), method="lm") +
+  ylim(1.5,4.5) +
+  theme_bw()
+nominal_plot 
+
+model4 <- lmer(neuro ~ grade + MPEDUC2_Z + (1 | FAMID), data = oysup_long3)
+summary(model4)
+model4_aug <- augment(model4)
+
+continuous_plot <- ggplot(model4_aug, aes(x = grade, y = .fitted)) + 
+  stat_smooth(aes(color = MPEDUC2_Z, group = MPEDUC2_Z),method="lm")+
+  ylim(1.5,4.5)+
+  theme_bw()
+continuous_plot
+```
+
+## 4. Calculate confidence intervals around your estimates for your final models.
+
+```{r, warning=F}
+confint(model3, parm = c("grade", "SEX22"))
+
+confint(model4, parm = c("grade", "MPEDUC2_Z"))
+```
 
 ## 5. Include both types of covariates in a single model. How does your interpretation of parameters change?
+```{r, warning=F}
+oysup_long5 <- subset(oysup_long, subset = !is.na(MPEDUC2) & !is.na(SEX2))
+SEX2_Z <- scale(oysup_long5$SEX2, center = T, scale = F)
+MPEDUC2_Z <- scale(oysup_long5$MPEDUC2, center = T, scale = F)
+oysup_long5 <- cbind(oysup_long5, SEX2_Z, MPEDUC2_Z)
+model5 <- lmer(neuro ~ grade + MPEDUC2_Z + SEX2_Z + (1 | FAMID), data = oysup_long5)
+summary(model5)
+model5_aug <- augment(model5)
+```
+
+The effects of these variables don't seem to overlap very much, as their effects are preserved relative to the models in which they are each alone. However, now we can say that, holding father's education level constant, female students rate themselves higher on neuroticism than males do. And of course, sex of the student remaining constant, students who come from families where the father is more highly educated tend to rate themselves as lower on neuroticism.
 
 ## 6. If you have one available, introduce a time-varying covariate.
+
+## 
