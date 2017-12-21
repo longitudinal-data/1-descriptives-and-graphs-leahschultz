@@ -17,6 +17,7 @@ library(merTools)
 library(sjPlot)
 library(broom)
 library(tidyr)
+library(lcmm)
 oysup <- read.csv("~/1-descriptives-and-graphs-leahschultz/oysup_teacher_self.csv")
 purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_self.csv")
 oysup <- oysup %>%
@@ -38,6 +39,78 @@ oysup_long <- tbl_df(oysup) %>%
   mutate(grade = as.numeric(grade)) %>%
   spread(variable, value)
 oysup_long
+oysup_long$grade2 <- oysup_long$grade^2
 ```
 
+I want to use latent class mixed models to understand trends occurring in personality change, both from student- and teacher-reports. It is clear that not everyone is changing in the same ways during this time, but are there distinct clusters of students changing in specific ways?
 
+```{r}
+model_1 <- lcmm(fixed = extra ~ grade + grade2, 
+                   random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=1, idiag=FALSE, link="linear",data=oysup_long)
+
+model_2 <- lcmm(fixed = extra ~ grade + grade2, 
+                   mixture = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=2, idiag=FALSE, link="linear",data=oysup_long)
+
+model_3 <- lcmm(fixed = extra ~ grade + grade2, 
+                   mixture = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=3, idiag=FALSE, link="linear",data=oysup_long)
+
+model_4 <- lcmm(fixed = extra ~ grade + grade2, 
+                   mixture = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=4, idiag=FALSE, link="linear",data=oysup_long)
+
+model_5 <- lcmm(fixed = extra ~ grade + grade2, 
+                   mixture = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=5, idiag=FALSE, link="linear",data=oysup_long)
+```
+summary(model_1)
+
+
+```{r}
+
+
+
+```
+
+```{r}
+summarytable(model_1, model_2, model_3, model_4, model_5)
+```
+
+```{r}
+# How many subjects are in each class?
+ppwave_model4 <- postprob(model_4,c(0.7,0.8,0.9)) #for the model with 4 classes
+ppwave_model4[1]
+
+# What are the mean posterior probabilities for each class? And what percent 
+# of subjects in each class have posterior probabilities above thresholds (specified in the function)?
+ppwave_model4[2:3]
+
+#Entropy
+# LCMM doesn't have a function (that I know of), to calculate relative entropy, 
+# so I used this homemade function supplied by OpenMX
+# Calculate relative entropy based on post from OpenMx 
+# (see http://openmx.ssri.psu.edu/thread/717)
+
+entropy <- function(classProbs){
+    n <- dim(classProbs)[1]
+    k <- dim(classProbs)[2]
+    e <- 1-sum(-classProbs*log(classProbs))/(n*log(k))
+    return(e)
+}
+
+entropy(classProbs = model_2$pprob[,3:4])
+entropy(classProbs = model_3$pprob[,3:5])
+entropy(classProbs = model_4$pprob[,3:6])
+```
+
+```{r}
+plot.lcmm
+plot(model_1,which="fit",var.time="wave",bty="n")
+plot(model_2,which="fit",var.time="wave",bty="n")
+#hide the legend, making it easier to see the trajectories
+plot(model_3,which="fit",var.time="wave",bty="n")
+plot(model_4,which="fit",var.time="wave",bty="n")
+plot(model_5,which="fit",var.time="wave",bty="n")
+```
