@@ -33,7 +33,7 @@ oysup <- cbind(oysup, dems)
 
 First, restructuring data:
 
-```{r}
+```{r, warning = FALSE, message = FALSE}
 oysup_long <- tbl_df(oysup) %>%
   gather(c(-FAMID, -SEX2, -MPEDUC2), key = "grade", value = "value") %>%
   separate(grade, into = c("variable", "grade"), sep = "_", convert = T) %>%
@@ -46,7 +46,7 @@ oysup_long$grade2 <- oysup_long$grade^2
 
 As a complement to the SEM growth models and TICs models that I'm already doing for my analyses of personality change during adolescence, I want to use latent class mixed models to understand any consistent trends that might be occurring in individuals' development, both from student- and teacher-reports. It is clear that not everyone is changing in the same ways during this time, but are there distinct clusters of students changing in specific ways?
 
-```{r}
+```{r, warning = FALSE, message = FALSE}
 oysup_long_e <- subset(oysup_long, subset = !is.na(extra))
 oysup_long_e_s <- subset(oysup_long_e, subset = source=="s")
 
@@ -71,12 +71,12 @@ model_5 <- lcmm(fixed = extra ~ grade + grade2,
                    ng=5, idiag=FALSE, link="linear",data=oysup_long_e_s)
 ```
 
-```{r}
+```{r, warning = FALSE, message = FALSE}
 summarytable(model_1, model_2, model_3, model_4, model_5)
 ```
 Looks like after 2 classes, a third class cannot be estimated. Two classes seem to fit the data best. Let's look at how many subjects are in each class (since it gives percentages but not #s).
 
-```{r}
+```{r, warning = FALSE, message = FALSE}
 # How many subjects per class in 2-class model?
 pp_model2 <- postprob(model_2) 
 pp_model2[1]
@@ -84,9 +84,7 @@ pp_model2[1]
 
 
 
-```{r}
-# Simple plotting
-#plot.lcmm(model_1,which="fit",var.time="grade",bty="n")
+```{r, warning = FALSE, message = FALSE}
 
 #First, we need a data frame that specifies which class subjects are in
 membership <- as.data.frame(matrix(nrow=959,ncol=2))
@@ -115,46 +113,211 @@ Group 2 is stable, while Group 1 is decreasing over time.
 
 ## Let's repeat with teacher-reported data.
 
-```{r}
+```{r, warning = FALSE, message = FALSE}
 oysup_long_e <- subset(oysup_long, subset = !is.na(extra))
-oysup_long_e_s <- subset(oysup_long_e, subset = source=="s")
+oysup_long_e_t <- subset(oysup_long_e, subset = source=="t")
 
 model_1 <- lcmm(fixed = extra ~ grade + grade2, 
                    random = ~grade, nwg = FALSE, subject = "FAMID",
-                   ng=1, idiag=FALSE, link="linear",data=oysup_long_e_s)
+                   ng=1, idiag=FALSE, link="linear",data=oysup_long_e_t)
 
 model_2 <- lcmm(fixed = extra ~ grade + grade2, 
                    mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
-                   ng=2, idiag=FALSE, link="linear",data=oysup_long_e_s)
+                   ng=2, idiag=FALSE, link="linear",data=oysup_long_e_t)
 
 model_3 <- lcmm(fixed = extra ~ grade + grade2, 
                    mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
-                   ng=3, idiag=FALSE, link="linear",data=oysup_long_e_s)
+                   ng=3, idiag=FALSE, link="linear",data=oysup_long_e_t)
 
 model_4 <- lcmm(fixed = extra ~ grade + grade2, 
                    mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
-                   ng=4, idiag=FALSE, link="linear",data=oysup_long_e_s)
+                   ng=4, idiag=FALSE, link="linear",data=oysup_long_e_t)
 
 model_5 <- lcmm(fixed = extra ~ grade + grade2, 
                    mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
-                   ng=5, idiag=FALSE, link="linear",data=oysup_long_e_s)
+                   ng=5, idiag=FALSE, link="linear",data=oysup_long_e_t)
 ```
 
-```{r}
+```{r, warning = FALSE, message = FALSE}
+summarytable(model_1, model_2, model_3, model_4, model_5)
+
+pp_model2 <- postprob(model_2) 
+pp_model2[1]
+
+pp_model3 <- postprob(model_3) 
+pp_model3[1]
+
+pp_model4 <- postprob(model_4) 
+pp_model4[1]
+
+pp_model5 <- postprob(model_5) 
+pp_model5[1]
+```
+
+A two-class solution seems to work best here, too.
+
+```{r, warning = FALSE, message = FALSE}
+
+membership <- as.data.frame(matrix(nrow=939,ncol=2))
+colnames(membership) <- c("FAMID","Class_2")
+membership[,1:2] <- model_2$pprob[,1:2]
+oysup_long_e_t <- merge(x = oysup_long_e_t, y = membership, by="FAMID")
+
+oysup_long_e_t7 <- subset(oysup_long_e_t, subset = grade=="7")
+t.test(data = oysup_long_e_t7, extra ~ Class_2)
+
+oysup_long_e_t8 <- subset(oysup_long_e_t, subset = grade=="8")
+t.test(data = oysup_long_e_t8, extra ~ Class_2)
+
+oysup_long_e_t9 <- subset(oysup_long_e_t, subset = grade=="9")
+t.test(data = oysup_long_e_t9, extra ~ Class_2)
+
+oysup_long_e_t10 <- subset(oysup_long_e_t, subset = grade=="10")
+t.test(data = oysup_long_e_t10, extra ~ Class_2)
+```
+Once again, we have a higher group and a lower group, though it is difficult to see what exactly is happening at the individual-curve level unless we plot.
+
+# Agreeableness
+
+```{r, warning = FALSE, message = FALSE}
+oysup_long_a <- subset(oysup_long, subset = !is.na(agree))
+oysup_long_a_s <- subset(oysup_long_a, subset = source=="s")
+
+model_1 <- lcmm(fixed = agree ~ grade + grade2, 
+                   random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=1, idiag=FALSE, link="linear",data=oysup_long_a_s)
+
+model_2 <- lcmm(fixed = agree ~ grade + grade2, 
+                   mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=2, idiag=FALSE, link="linear",data=oysup_long_a_s)
+
+model_3 <- lcmm(fixed = agree ~ grade + grade2, 
+                   mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=3, idiag=FALSE, link="linear",data=oysup_long_a_s)
+
+model_4 <- lcmm(fixed = agree ~ grade + grade2, 
+                   mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=4, idiag=FALSE, link="linear",data=oysup_long_a_s)
+
+model_5 <- lcmm(fixed = agree ~ grade + grade2, 
+                   mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=5, idiag=FALSE, link="linear",data=oysup_long_a_s)
+```
+
+```{r, warning = FALSE, message = FALSE}
 summarytable(model_1, model_2, model_3, model_4, model_5)
 ```
+Two classes seem to fit the data best. Let's look at how many subjects are in each class.
 
-```{r}
-oysup_long_e_s7 <- subset(oysup_long_e_s, subset = grade=="7")
-t.test(data = oysup_long_e_s7, extra ~ Class_2)
-
-oysup_long_e_s8 <- subset(oysup_long_e_s, subset = grade=="8")
-t.test(data = oysup_long_e_s8, extra ~ Class_2)
-
-oysup_long_e_s9 <- subset(oysup_long_e_s, subset = grade=="9")
-t.test(data = oysup_long_e_s9, extra ~ Class_2)
-
-oysup_long_e_s10 <- subset(oysup_long_e_s, subset = grade=="10")
-t.test(data = oysup_long_e_s10, extra ~ Class_2)
+```{r, warning = FALSE, message = FALSE}
+# How many subjects per class in 2-class model?
+pp_model2 <- postprob(model_2) 
+pp_model2[1]
 ```
+
+```{r, warning = FALSE, message = FALSE}
+# How are the classes different?
+
+membership <- as.data.frame(matrix(nrow=960,ncol=2))
+colnames(membership) <- c("FAMID","Class_2")
+membership[,1:2] <- model_2$pprob[,1:2]
+oysup_long_a_s <- merge(x = oysup_long_a_s, y = membership, by="FAMID")
+
+# agreeableness in 7th grade
+oysup_long_a_s7 <- subset(oysup_long_a_s, subset = grade=="7")
+t.test(data = oysup_long_a_s7, agree ~ Class_2)
+
+# agreeableness in 8th grade
+oysup_long_a_s8 <- subset(oysup_long_a_s, subset = grade=="8")
+t.test(data = oysup_long_a_s8, agree ~ Class_2)
+
+# agreeableness in 9th grade
+oysup_long_a_s9 <- subset(oysup_long_a_s, subset = grade=="9")
+t.test(data = oysup_long_a_s9, agree ~ Class_2)
+
+# agreeableness in 10th grade
+oysup_long_a_s10 <- subset(oysup_long_a_s, subset = grade=="10")
+t.test(data = oysup_long_a_s10, agree ~ Class_2)
+
+```
+
+```{r, warning = FALSE, message = FALSE}
+oysup_long_a_s$FAMID <- as.character(oysup_long_a_s$FAMID)
+plot_a_s <- ggplot(oysup_long_a_s, aes(x = grade, y = agree, group = FAMID, color = Class_2)) +
+  geom_smooth(aes(group = FAMID, color = Class_2), size = 0.5) +
+  geom_smooth(aes(group = Class_2), method = "loess", size = 2, se=T)
+plot_a_s
+```
+
+Again, one group seems to be relatively stable and high, while the other seems to decrease in agreeableness over time.
+
+## Let's repeat with teacher-reported data.
+
+```{r, warning = FALSE, message = FALSE}
+oysup_long_a <- subset(oysup_long, subset = !is.na(agree))
+oysup_long_a_t <- subset(oysup_long_a, subset = source=="t")
+
+model_1 <- lcmm(fixed = agree ~ grade + grade2, 
+                   random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=1, idiag=FALSE, link="linear",data=oysup_long_a_t)
+
+model_2 <- lcmm(fixed = agree ~ grade + grade2, 
+                   mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=2, idiag=FALSE, link="linear",data=oysup_long_a_t)
+
+model_3 <- lcmm(fixed = agree ~ grade + grade2, 
+                   mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=3, idiag=FALSE, link="linear",data=oysup_long_a_t)
+
+model_4 <- lcmm(fixed = agree ~ grade + grade2, 
+                   mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=4, idiag=FALSE, link="linear",data=oysup_long_a_t)
+
+model_5 <- lcmm(fixed = agree ~ grade + grade2, 
+                   mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=5, idiag=FALSE, link="linear",data=oysup_long_a_t)
+```
+
+```{r, warning = FALSE, message = FALSE}
+summarytable(model_1, model_2, model_3, model_4, model_5)
+
+pp_model3 <- postprob(model_3) 
+pp_model3[1]
+
+```
+
+A three-class solution seems to work best here, actually.
+
+```{r, warning = FALSE, message = FALSE}
+
+membership <- as.data.frame(matrix(nrow=939,ncol=2))
+colnames(membership) <- c("FAMID","Class_3")
+membership[,1:2] <- model_3$pprob[,1:2]
+oysup_long_a_t <- merge(x = oysup_long_a_t, y = membership, by="FAMID")
+
+oysup_long_a_t7 <- subset(oysup_long_a_t, subset = grade=="7")
+anova1 <- aov(formula = agree ~ Class_3, data = oysup_long_a_t7)
+summary(anova1)
+
+oysup_long_a_t8 <- subset(oysup_long_a_t, subset = grade=="8")
+anova2 <- aov(formula = agree ~ Class_3, data = oysup_long_a_t8)
+summary(anova2)
+
+oysup_long_a_t9 <- subset(oysup_long_a_t, subset = grade=="9")
+anova3 <- aov(formula = agree ~ Class_3, data = oysup_long_a_t9)
+summary(anova3)
+
+oysup_long_a_t10 <- subset(oysup_long_a_t, subset = grade=="10")
+anova4 <- aov(formula = agree ~ Class_3, data = oysup_long_a_t10)
+summary(anova4)
+```
+Once again, we have differences between groups, though it is difficult to see what exactly is happening at the individual-curve level unless we plot.
+
+```{r, warning = FALSE, message = FALSE}
+plot_a_t <- ggplot(oysup_long_a_t, aes(x = grade, y = agree, group = FAMID, color = Class_3)) +
+  geom_smooth(aes(group = FAMID, color = Class_3), size = 0.5, se=F) +
+  geom_smooth(aes(group = Class_3), method = "loess", size = 2, se=T)
+plot_a_t
+```
+
 
