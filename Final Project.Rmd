@@ -21,10 +21,11 @@ library(lcmm)
 library(plyr)
 oysup <- read.csv("~/1-descriptives-and-graphs-leahschultz/oysup_teacher_self.csv")
 purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_self.csv")
+
 oysup <- oysup %>%
-  dplyr::select(FAMID, extra_7s:extra_10s, agree_7s:agree_10s, consc_7s:consc_10s, neuro_7s:neuro_10s,
-                open_7s:open_10s,extra_7t:extra_10t, agree_7t:agree_10t, consc_7t:consc_10t,
-                neuro_7t:neuro_10t, open_7t:open_10t)
+  dplyr::select(FAMID, extra_7s:extra_10s, agree_7s:agree_10s,
+                consc_7s:consc_10s, neuro_7s:neuro_10s, open_7s:open_10s,extra_7t:extra_10t,
+                agree_7t:agree_10t, consc_7t:consc_10t, neuro_7t:neuro_10t, open_7t:open_10t)
 dems <- purpose %>%
   dplyr::select(SEX2, MPEDUC2)
 oysup <- cbind(oysup, dems)
@@ -43,95 +44,117 @@ oysup_long
 oysup_long$grade2 <- oysup_long$grade^2
 ```
 
-I want to use latent class mixed models to understand trends occurring in personality change, both from student- and teacher-reports. It is clear that not everyone is changing in the same ways during this time, but are there distinct clusters of students changing in specific ways?
+As a complement to the SEM growth models and TICs models that I'm already doing for my analyses of personality change during adolescence, I want to use latent class mixed models to understand any consistent trends that might be occurring in individuals' development, both from student- and teacher-reports. It is clear that not everyone is changing in the same ways during this time, but are there distinct clusters of students changing in specific ways?
 
 ```{r}
+oysup_long_e <- subset(oysup_long, subset = !is.na(extra))
+oysup_long_e_s <- subset(oysup_long_e, subset = source=="s")
+
 model_1 <- lcmm(fixed = extra ~ grade + grade2, 
                    random = ~grade, nwg = FALSE, subject = "FAMID",
-                   ng=1, idiag=FALSE, link="linear",data=oysup_long)
+                   ng=1, idiag=FALSE, link="linear",data=oysup_long_e_s)
 
 model_2 <- lcmm(fixed = extra ~ grade + grade2, 
-                   mixture = ~grade, nwg = FALSE, subject = "FAMID",
-                   ng=2, idiag=FALSE, link="linear",data=oysup_long)
+                   mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=2, idiag=FALSE, link="linear",data=oysup_long_e_s)
 
 model_3 <- lcmm(fixed = extra ~ grade + grade2, 
-                   mixture = ~grade, nwg = FALSE, subject = "FAMID",
-                   ng=3, idiag=FALSE, link="linear",data=oysup_long)
+                   mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=3, idiag=FALSE, link="linear",data=oysup_long_e_s)
 
 model_4 <- lcmm(fixed = extra ~ grade + grade2, 
-                   mixture = ~grade, nwg = FALSE, subject = "FAMID",
-                   ng=4, idiag=FALSE, link="linear",data=oysup_long)
+                   mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=4, idiag=FALSE, link="linear",data=oysup_long_e_s)
 
 model_5 <- lcmm(fixed = extra ~ grade + grade2, 
-                   mixture = ~grade, nwg = FALSE, subject = "FAMID",
-                   ng=5, idiag=FALSE, link="linear",data=oysup_long)
+                   mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=5, idiag=FALSE, link="linear",data=oysup_long_e_s)
 ```
 
 ```{r}
 summarytable(model_1, model_2, model_3, model_4, model_5)
 ```
-Wow, this summary table is super helpful. To my eye, it looks as if the 3-class model makes the most sense for the data. But let's look at how many subjects are in each class (since it gives percentages but not #s).
+Looks like after 2 classes, a third class cannot be estimated. Two classes seem to fit the data best. Let's look at how many subjects are in each class (since it gives percentages but not #s).
 
 ```{r}
-
 # How many subjects per class in 2-class model?
 pp_model2 <- postprob(model_2) 
 pp_model2[1]
-
-# How many subjects per class in 3-class model?
-pp_model3 <- postprob(model_3) 
-pp_model3[1]
-
-# How many subjects per class in 4-class model?
-pp_model4 <- postprob(model_4) 
-pp_model4[1]
-
-# What percent of subjects in each class have posterior probabilities above thresholds (specified in the function)?
-pp_model2[2:3]
-pp_model3[2:3]
-pp_model4[2:3]
 ```
 
-Upon second inspection, it seems that class 4 will work well.
+
 
 ```{r}
+# Simple plotting
+#plot.lcmm(model_1,which="fit",var.time="grade",bty="n")
+
 #First, we need a data frame that specifies which class subjects are in
-membership <- as.data.frame(matrix(nrow=966,ncol=4))
-colnames(membership) <- c("ID","Class_2","Class_3","Class_4")
+membership <- as.data.frame(matrix(nrow=959,ncol=2))
+colnames(membership) <- c("FAMID","Class_2")
 membership[,1:2] <- model_2$pprob[,1:2]
-membership[,3:4] <- c(model_3$pprob[,2], model_4$pprob[,2])
+oysup_long_e_s <- merge(x = oysup_long_e_s, y = membership, by="FAMID")
 
-#Recode into classes with meaningful names
-#NOTE: Class 1 in the 2 class model will not necessary be the "same" 
-# (i.e. have the same trajectory) as Class 1 and 2 in the 3 class model.
-membership$Class_2 <- as.character(membership$Class_2)
-membership$Class_2 <- revalue(membership$Class_2, c("1"="Stable_High","2"="Stable_Low"))
-membership$Class_3 <- as.character(membership$Class_3)
-membership$Class_3 <- revalue(membership$Class_3, c("1"="Stable_Middle","2"="Stable_High","3"="Stable_Low"))
-membership$Class_4 <- as.character(membership$Class_4)
-membership$Class_4 <- revalue(membership$Class_4, c("1"="Stable_Middle","2"="Stable_Low"
-                                                    ,"3"="Stable_High","4"="Stable_VeryLow"))
+# How are the classes different?
 
-oysup_long <- merge(membership,oysup_long)
+# Extraversion in 7th grade
+oysup_long_e_s7 <- subset(oysup_long_e_s, subset = grade=="7")
+t.test(data = oysup_long_e_s7, extra ~ Class_2)
 
-#2 class model
-plot_2 <- ggplot(oysup_long[oysup_long2$Class_2 %in% c("Stable_High","Stable_Low"), ],
-       aes(x = grade,y = extra, group = FAMID,color=Class_2)) + 
-  geom_line(alpha=0.25) + 
-  geom_smooth(aes(group=Class_2),method="loess",size=1.5,se=T,linetype="longdash")
-plot_2
+oysup_long_e_s8 <- subset(oysup_long_e_s, subset = grade=="8")
+t.test(data = oysup_long_e_s8, extra ~ Class_2)
 
-#3 class model
-plot_3 <- ggplot(oysup_long[oysup_long3$Class_3 %in% c("Stable_High","Stable_Low"), ],
-       aes(x = grade,y = extra, group = FAMID,color=Class_2)) + 
-  geom_line(alpha=0.25) + 
-  geom_smooth(aes(group=Class_2),method="loess",size=1.5,se=T,linetype="longdash")
-plot_3
+oysup_long_e_s9 <- subset(oysup_long_e_s, subset = grade=="9")
+t.test(data = oysup_long_e_s9, extra ~ Class_2)
 
-#4 class model
-plot_2 <- ggplot(oysup_long[oysup_long2$Class_2 %in% c("Stable_High","Stable_Low"), ],
-       aes(x = grade,y = extra, group = FAMID,color=Class_2)) + 
-  geom_line(alpha=0.25) + 
-  geom_smooth(aes(group=Class_2),method="loess",size=1.5,se=T,linetype="longdash")
-plot_2
+oysup_long_e_s10 <- subset(oysup_long_e_s, subset = grade=="10")
+t.test(data = oysup_long_e_s10, extra ~ Class_2)
+
 ```
+
+Group 2 is stable, while Group 1 is decreasing over time.
+
+## Let's repeat with teacher-reported data.
+
+```{r}
+oysup_long_e <- subset(oysup_long, subset = !is.na(extra))
+oysup_long_e_s <- subset(oysup_long_e, subset = source=="s")
+
+model_1 <- lcmm(fixed = extra ~ grade + grade2, 
+                   random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=1, idiag=FALSE, link="linear",data=oysup_long_e_s)
+
+model_2 <- lcmm(fixed = extra ~ grade + grade2, 
+                   mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=2, idiag=FALSE, link="linear",data=oysup_long_e_s)
+
+model_3 <- lcmm(fixed = extra ~ grade + grade2, 
+                   mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=3, idiag=FALSE, link="linear",data=oysup_long_e_s)
+
+model_4 <- lcmm(fixed = extra ~ grade + grade2, 
+                   mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=4, idiag=FALSE, link="linear",data=oysup_long_e_s)
+
+model_5 <- lcmm(fixed = extra ~ grade + grade2, 
+                   mixture = ~grade, random = ~grade, nwg = FALSE, subject = "FAMID",
+                   ng=5, idiag=FALSE, link="linear",data=oysup_long_e_s)
+```
+
+```{r}
+summarytable(model_1, model_2, model_3, model_4, model_5)
+```
+
+```{r}
+oysup_long_e_s7 <- subset(oysup_long_e_s, subset = grade=="7")
+t.test(data = oysup_long_e_s7, extra ~ Class_2)
+
+oysup_long_e_s8 <- subset(oysup_long_e_s, subset = grade=="8")
+t.test(data = oysup_long_e_s8, extra ~ Class_2)
+
+oysup_long_e_s9 <- subset(oysup_long_e_s, subset = grade=="9")
+t.test(data = oysup_long_e_s9, extra ~ Class_2)
+
+oysup_long_e_s10 <- subset(oysup_long_e_s, subset = grade=="10")
+t.test(data = oysup_long_e_s10, extra ~ Class_2)
+```
+
