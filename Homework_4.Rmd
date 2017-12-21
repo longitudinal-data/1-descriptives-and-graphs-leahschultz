@@ -197,43 +197,42 @@ Not much of a difference between using diagonal weighted least squares estimatio
 ## 9) Provide semplots for each of the models.
 
 ```{r}
+# Measurement model: Marker variable
 semPaths(fit.1)
+# Measurement model: Fixed factor
 semPaths(fit.2)
+# Measurement model: Effects coding
 semPaths(fit.3)
+# Longitudinal CFA: Residuals correlated over time
 semPaths(fit.4)
+# Longitudinal CFA: Auto-regressive model
 semPaths(fit.5)
+# Longitudinal growth model: Basic
 semPaths(fit.6)
+# Longitudinal growth model: Residual variances constrained to be equal
 semPaths(fit.8)
+# Longitudinal growth model: Fixed slope
 semPaths(fit.9)
+# Longitudinal growth model: Time metric changed
 semPaths(fit.10)
+# Longitudinal growth model: DWLS estimation
+semPaths(fit.11)
 ```
-
 
 ## 10) Test measurement invariance across time for your construct. Can you run growth models? If there is evidence of non-invariance, what seems to be the problem?
 
 ```{r}
-
-```
-
-
-## 11) Fit a second order growth model. Compare and contrast the estimates with the normal latent growth model.
-
-```{r}
-
-```
-
-
-## 12) Fit a series of multiple group models. Constrain some parameters and compare the fit.
-
-```{r}
-
-```
-
-mod.8 <- 'neuro_t1 =~ TPER7_08 + TPER7_10 + TPER7_17R + TPER7_12R + TPER7_13R
+mod.12 <- 'neuro_t1 =~ TPER7_08 + TPER7_10 + TPER7_17R + TPER7_12R + TPER7_13R
 neuro_t2 =~ TPER8_08 + TPER8_10 + TPER8_17R + TPER8_12R + TPER8_13R
 neuro_t3 =~ TPER9_08 + TPER9_10 + TPER9_17R + TPER9_12R + TPER9_13R
 neuro_t4 =~ TPER10_08 + TPER10_10 + TPER10_17R + TPER10_12R + TPER10_13R
 
+## free latent variances at later times (only set the scale once)
+neuro_t2 ~~ NA*neuro_t2
+neuro_t3 ~~ NA*neuro_t3
+neuro_t4 ~~ NA*neuro_t4
+
+## correlated residuals across time
 TPER7_08 ~~ TPER8_08 + TPER9_08 + TPER10_08
 TPER8_08 ~~ TPER9_08 + TPER10_08
 TPER9_08 ~~ TPER10_08
@@ -253,6 +252,56 @@ TPER9_12R ~~ TPER10_12R
 TPER7_13R ~~ TPER8_13R + TPER9_13R + TPER10_13R
 TPER8_13R ~~ TPER9_13R + TPER10_13R
 TPER9_13R ~~ TPER10_13R
+
+## constrain intercepts across time
+TPER7_08 ~ t1*1
+TPER8_08 ~ t2*1
+TPER9_08 ~ t3*1
+TPER10_08 ~ t4*1
+
+TPER7_10 ~ t1*1
+TPER8_10 ~ t2*1
+TPER9_10 ~ t3*1
+TPER10_10 ~ t4*1
+
+TPER7_17R ~ t1*1
+TPER8_17R ~ t2*1
+TPER9_17R ~ t3*1
+TPER10_17R ~ t4*1
+
+TPER7_12R ~ t1*1
+TPER8_12R ~ t2*1
+TPER9_12R ~ t3*1
+TPER10_12R ~ t4*1
+
+TPER7_13R ~ t1*1
+TPER8_13R ~ t2*1
+TPER9_13R ~ t3*1
+TPER10_13R ~ t4*1
+
+neuro_t2 ~ NA*1
+neuro_t3 ~ NA*1
+neuro_t4 ~ NA*1'
+
+fit.12 <- cfa(mod.12, data = oysup)
+
+summary(fit.12, fit.measures=TRUE)
+```
+
+
+## 11) Fit a second order growth model. Compare and contrast the estimates with the normal latent growth model.
+
+```{r}
+
+```
+
+
+## 12) Fit a series of multiple group models. Constrain some parameters and compare the fit.
+
+```{r}
+
+```
+
 
 TPER7_08 ~~ u*TPER7_08
 TPER7_10 ~~ u*TPER7_10
