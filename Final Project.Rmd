@@ -18,6 +18,7 @@ library(sjPlot)
 library(broom)
 library(tidyr)
 library(lcmm)
+library(plyr)
 oysup <- read.csv("~/1-descriptives-and-graphs-leahschultz/oysup_teacher_self.csv")
 purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_self.csv")
 oysup <- oysup %>%
@@ -65,52 +66,72 @@ model_5 <- lcmm(fixed = extra ~ grade + grade2,
                    mixture = ~grade, nwg = FALSE, subject = "FAMID",
                    ng=5, idiag=FALSE, link="linear",data=oysup_long)
 ```
-summary(model_1)
-
-
-```{r}
-
-
-
-```
 
 ```{r}
 summarytable(model_1, model_2, model_3, model_4, model_5)
 ```
+Wow, this summary table is super helpful. To my eye, it looks as if the 3-class model makes the most sense for the data. But let's look at how many subjects are in each class (since it gives percentages but not #s).
 
 ```{r}
-# How many subjects are in each class?
-ppwave_model4 <- postprob(model_4,c(0.7,0.8,0.9)) #for the model with 4 classes
-ppwave_model4[1]
 
-# What are the mean posterior probabilities for each class? And what percent 
-# of subjects in each class have posterior probabilities above thresholds (specified in the function)?
-ppwave_model4[2:3]
+# How many subjects per class in 2-class model?
+pp_model2 <- postprob(model_2) 
+pp_model2[1]
 
-#Entropy
-# LCMM doesn't have a function (that I know of), to calculate relative entropy, 
-# so I used this homemade function supplied by OpenMX
-# Calculate relative entropy based on post from OpenMx 
-# (see http://openmx.ssri.psu.edu/thread/717)
+# How many subjects per class in 3-class model?
+pp_model3 <- postprob(model_3) 
+pp_model3[1]
 
-entropy <- function(classProbs){
-    n <- dim(classProbs)[1]
-    k <- dim(classProbs)[2]
-    e <- 1-sum(-classProbs*log(classProbs))/(n*log(k))
-    return(e)
-}
+# How many subjects per class in 4-class model?
+pp_model4 <- postprob(model_4) 
+pp_model4[1]
 
-entropy(classProbs = model_2$pprob[,3:4])
-entropy(classProbs = model_3$pprob[,3:5])
-entropy(classProbs = model_4$pprob[,3:6])
+# What percent of subjects in each class have posterior probabilities above thresholds (specified in the function)?
+pp_model2[2:3]
+pp_model3[2:3]
+pp_model4[2:3]
 ```
 
+Upon second inspection, it seems that class 4 will work well.
+
 ```{r}
-plot.lcmm
-plot(model_1,which="fit",var.time="wave",bty="n")
-plot(model_2,which="fit",var.time="wave",bty="n")
-#hide the legend, making it easier to see the trajectories
-plot(model_3,which="fit",var.time="wave",bty="n")
-plot(model_4,which="fit",var.time="wave",bty="n")
-plot(model_5,which="fit",var.time="wave",bty="n")
+#First, we need a data frame that specifies which class subjects are in
+membership <- as.data.frame(matrix(nrow=966,ncol=4))
+colnames(membership) <- c("ID","Class_2","Class_3","Class_4")
+membership[,1:2] <- model_2$pprob[,1:2]
+membership[,3:4] <- c(model_3$pprob[,2], model_4$pprob[,2])
+
+#Recode into classes with meaningful names
+#NOTE: Class 1 in the 2 class model will not necessary be the "same" 
+# (i.e. have the same trajectory) as Class 1 and 2 in the 3 class model.
+membership$Class_2 <- as.character(membership$Class_2)
+membership$Class_2 <- revalue(membership$Class_2, c("1"="Stable_High","2"="Stable_Low"))
+membership$Class_3 <- as.character(membership$Class_3)
+membership$Class_3 <- revalue(membership$Class_3, c("1"="Stable_Middle","2"="Stable_High","3"="Stable_Low"))
+membership$Class_4 <- as.character(membership$Class_4)
+membership$Class_4 <- revalue(membership$Class_4, c("1"="Stable_Middle","2"="Stable_Low"
+                                                    ,"3"="Stable_High","4"="Stable_VeryLow"))
+
+oysup_long <- merge(membership,oysup_long)
+
+#2 class model
+plot_2 <- ggplot(oysup_long[oysup_long2$Class_2 %in% c("Stable_High","Stable_Low"), ],
+       aes(x = grade,y = extra, group = FAMID,color=Class_2)) + 
+  geom_line(alpha=0.25) + 
+  geom_smooth(aes(group=Class_2),method="loess",size=1.5,se=T,linetype="longdash")
+plot_2
+
+#3 class model
+plot_3 <- ggplot(oysup_long[oysup_long3$Class_3 %in% c("Stable_High","Stable_Low"), ],
+       aes(x = grade,y = extra, group = FAMID,color=Class_2)) + 
+  geom_line(alpha=0.25) + 
+  geom_smooth(aes(group=Class_2),method="loess",size=1.5,se=T,linetype="longdash")
+plot_3
+
+#4 class model
+plot_2 <- ggplot(oysup_long[oysup_long2$Class_2 %in% c("Stable_High","Stable_Low"), ],
+       aes(x = grade,y = extra, group = FAMID,color=Class_2)) + 
+  geom_line(alpha=0.25) + 
+  geom_smooth(aes(group=Class_2),method="loess",size=1.5,se=T,linetype="longdash")
+plot_2
 ```
