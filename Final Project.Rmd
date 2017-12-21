@@ -9,3 +9,35 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r warning = FALSE, message = FALSE}
+library(dplyr)
+library(lme4)
+library(ggplot2)
+library(merTools)
+library(sjPlot)
+library(broom)
+library(tidyr)
+oysup <- read.csv("~/1-descriptives-and-graphs-leahschultz/oysup_teacher_self.csv")
+purpose <- read.csv("~/Dropbox/Lab & Research/OYSUP Project/oysup_self.csv")
+oysup <- oysup %>%
+  dplyr::select(FAMID, extra_7s:extra_10s, agree_7s:agree_10s, consc_7s:consc_10s, neuro_7s:neuro_10s,
+                open_7s:open_10s,extra_7t:extra_10t, agree_7t:agree_10t, consc_7t:consc_10t,
+                neuro_7t:neuro_10t, open_7t:open_10t)
+dems <- purpose %>%
+  dplyr::select(SEX2, MPEDUC2)
+oysup <- cbind(oysup, dems)
+```
+
+First, restructuring data:
+
+```{r}
+oysup_long <- tbl_df(oysup) %>%
+  gather(c(-FAMID, -SEX2, -MPEDUC2), key = "grade", value = "value") %>%
+  separate(grade, into = c("variable", "grade"), sep = "_", convert = T) %>%
+  separate(grade, into = c("grade", "source"), sep = -2) %>%
+  mutate(grade = as.numeric(grade)) %>%
+  spread(variable, value)
+oysup_long
+```
+
+
